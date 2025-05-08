@@ -1,0 +1,103 @@
+.container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.entry:hover {
+  transform: translateX(5px);
+}
+
+.entry:nth-child(1) {
+  background: linear-gradient(45deg, #ffd700, #ffc107);
+}
+
+.entry:nth-child(2) {
+  background: linear-gradient(45deg, #c0c0c0, #e0e0e0);
+}
+
+.entry:nth-child(3) {
+  background: linear-gradient(45deg, #cd7f32, #d4a276);
+}
+
+.rank {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  width: 40px;
+  text-align: center;
+  position: relative;
+}
+
+.crown {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  font-size: 1.2rem;
+}
+
+.userInfo {
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.userName {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.score {
+  color: #0070f3;
+  font-weight: 500;
+}
+
+.solved {
+  color: #666;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error {
+  color: #c62828;
+  text-align: center;
+  padding: 1rem;
+  background: #ffebee;
+  border-radius: 4px;
+  margin: 1rem 0;
+} 

@@ -1,0 +1,535 @@
+.outerBox {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #f5f6fa;
+  padding-top: 2.5rem;
+}
+
+.profileBox {
+  width: 100%;
+  max-width: 1100px;
+  min-width: 700px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.10);
+  padding: 2.5rem 2.5rem 2.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2.5rem;
+}
+
+.topRow {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.profilePicBox {
+  border: 4px solid #222;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.profilePic, .profilePicPlaceholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.changePhotoButton {
+  margin-top: 0.7rem;
+  background: #e2e8f0;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 110px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.changePhotoButton:hover {
+  background: #cbd5e1;
+}
+
+.bioBox {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  min-height: unset;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.userName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #222;
+  text-align: left;
+  margin-bottom: 0.2rem;
+}
+
+.bioText {
+  font-size: 1.05rem;
+  color: #444;
+  margin-bottom: 0.2rem;
+  text-align: left;
+  width: 100%;
+}
+
+.locationRow {
+  font-size: 1rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.emailRow {
+  width: 100%;
+  margin: 0.5rem 0 0.2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.emailInput {
+  width: 100%;
+  background: #f4f4f4;
+  color: #888;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.98rem;
+  margin-top: 0.2rem;
+}
+
+.changePasswordBtn {
+  width: auto;
+  margin-top: 0.5rem;
+  background: #2b6cb0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.changePasswordBtn:hover {
+  background: #174a7c;
+}
+
+.middleRow {
+  width: 100%;
+  border: 2px solid #111;
+  border-radius: 12px;
+  background: #fff;
+  padding: 1.2rem 0.5rem;
+  margin-bottom: 0.7rem;
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.statsBox {
+  width: 100%;
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+}
+
+.statItem {
+  flex: 0 0 180px;
+  text-align: center;
+  background: #f4f6fa;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  padding: 1.1rem 0.5rem 0.7rem 0.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.statValue {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2b6cb0;
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 0.1rem;
+}
+
+.bottomRow {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.contributionOuterBox {
+  padding: 1.2rem 1.2rem 0.7rem 1.2rem;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.contributionGraph {
+  display: grid;
+  grid-template-columns: repeat(53, 1fr);
+  gap: 1px;
+  background: #f4f6fa;
+  border-radius: 4px;
+  padding: 0.3rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.contributionDay {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  max-width: 16px;
+  max-height: 16px;
+  border-radius: 2px;
+  background: #ebedf0;
+  transition: background-color 0.2s ease;
+}
+
+.level0 {
+  background: #ebedf0;
+}
+
+.level1 {
+  background: #9be9a8;
+}
+
+.level2 {
+  background: #40c463;
+}
+
+.level3 {
+  background: #30a14e;
+}
+
+.level4 {
+  background: #216e39;
+}
+
+.section {
+  width: 100%;
+  margin-top: 1.2rem;
+}
+
+.socialLinks {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.socialLinkGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.socialLinkHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.visibilityToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.toggleLabel {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.profileInput, .profileTextarea {
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  padding: 0.4rem 0.7rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.profileInput:disabled {
+  background: #f4f4f4;
+  color: #888;
+}
+
+.formActions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cancelButton, .saveButton {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancelButton {
+  background: #e2e8f0;
+  color: #222;
+}
+
+.cancelButton:hover {
+  background: #cbd5e1;
+}
+
+.saveButton {
+  background: #3182ce;
+  color: white;
+}
+
+.saveButton:hover {
+  background: #2563eb;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingText {
+  color: #4a5568;
+  font-size: 1.1rem;
+}
+
+.errorContainer {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.errorMessage {
+  color: #e53e3e;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  padding: 0.75rem 1.5rem;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+  background: #2c5282;
+}
+
+@media (max-width: 900px) {
+  .outerBox {
+    padding: 0.5rem;
+  }
+  .profileBox {
+    padding: 1rem;
+  }
+  .topRow {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .bioBox {
+    padding: 1rem;
+  }
+  .middleRow, .contributionOuterBox {
+    padding: 1rem;
+  }
+  .contributionOuterBox {
+    max-width: 100vw;
+  }
+  .contributionGraphGrid {
+    max-width: 98vw;
+    gap: 1px;
+  }
+  .contributionDay {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+  }
+}
+
+.contributionGraphWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+}
+
+.monthLabels {
+  display: grid;
+  grid-template-columns: 24px repeat(53, 1fr);
+  width: 100%;
+  margin-bottom: 2px;
+}
+.monthLabelSpacer {
+  width: 24px;
+  height: 1px;
+}
+.monthLabel {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #888;
+  grid-row: 1;
+  grid-column: auto;
+}
+
+.graphGrid {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+.weekdayLabels {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  width: 24px;
+  margin-right: 2px;
+}
+.weekdayLabel {
+  font-size: 0.8rem;
+  color: #888;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  grid-row: auto;
+}
+.tilesGrid {
+  display: grid;
+  grid-template-columns: repeat(53, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 2px;
+  width: calc(100% - 24px);
+}
+.weekColumn {
+  display: contents;
+}
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.contributionGraphGrid {
+  display: grid;
+  grid-template-columns: 24px repeat(53, 1fr);
+  grid-template-rows: 20px repeat(7, 1fr);
+  gap: 2px;
+  width: 100%;
+  max-width: 650px;
+  background: none;
+}
+.emptyCell {
+  grid-row: 1;
+  grid-column: 1;
+  background: none;
+}
+.monthLabelCell {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #888;
+  background: none;
+  grid-row: 1;
+}
+.weekdayLabelCell {
+  font-size: 0.8rem;
+  color: #888;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: none;
+  grid-column: 1;
+}
+
+.socialSection {
+  width: 100%;
+  background: #f7fafd;
+  border-radius: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  padding: 2rem 2rem 1.2rem 2rem;
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+} 

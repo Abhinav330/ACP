@@ -1,0 +1,122 @@
+[{
+  "_id": {
+    "$oid": "67fd96ed72cdc770da359f54"
+  },
+  "user_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "last_submission": {
+    "$date": "2025-04-14T23:14:53.072Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67ca61dfa069db7dfc36a3e7"
+    }
+  ],
+  "total_score": 20
+},
+{
+  "_id": {
+    "$oid": "67fd984a72cdc770da359f55"
+  },
+  "user_id": {
+    "$oid": "67fb8cf700b139d1f78c749c"
+  },
+  "last_submission": {
+    "$date": "2025-04-20T14:21:58.942Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67ca61dfa069db7dfc36a3e7"
+    }
+  ],
+  "total_score": 20
+},
+{
+  "_id": {
+    "$oid": "67feb66a4753a053173825c1"
+  },
+  "user_id": {
+    "$oid": "67feb5ae17bc5db714c12295"
+  },
+  "last_submission": {
+    "$date": "2025-04-15T19:46:13.425Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67ca61dfa069db7dfc36a3e7"
+    },
+    {
+      "$oid": "67c7bd6e3d64b7672dea5ce1"
+    }
+  ],
+  "total_score": 45
+},
+{
+  "_id": {
+    "$oid": "67fee4104753a053173825c2"
+  },
+  "user_id": {
+    "$oid": "67d0be66e779cef5c95534a7"
+  },
+  "last_submission": {
+    "$date": "2025-04-20T14:21:10.197Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67ca61dfa069db7dfc36a3e7"
+    }
+  ],
+  "total_score": 20
+},
+{
+  "_id": {
+    "$oid": "680288181a8ecc0a0cd12d2b"
+  },
+  "user_id": {
+    "$oid": "6802878562f975e2ba93fc37"
+  },
+  "last_submission": {
+    "$date": "2025-04-18T17:12:56.442Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67ca61dfa069db7dfc36a3e7"
+    }
+  ],
+  "total_score": 20
+},
+{
+  "_id": {
+    "$oid": "68179b5264ba29fdd39acd8b"
+  },
+  "user_id": {
+    "$oid": "6817955c07947d2592548770"
+  },
+  "last_submission": {
+    "$date": "2025-05-07T01:02:32.716Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67ca61dfa069db7dfc36a3e7"
+    }
+  ],
+  "total_score": 20
+},
+{
+  "_id": {
+    "$oid": "681ab35911581a3c0d4f598c"
+  },
+  "user_id": {
+    "$oid": "681ab249deaade8a79fd4659"
+  },
+  "last_submission": {
+    "$date": "2025-05-07T01:11:52.997Z"
+  },
+  "question_ids": [
+    {
+      "$oid": "67d8893781b375bda8def85a"
+    }
+  ],
+  "total_score": 25
+}]

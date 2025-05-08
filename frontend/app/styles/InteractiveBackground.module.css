@@ -1,0 +1,338 @@
+.backgroundContainer {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background-color: #021027;
+}
+
+.background {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  mask-image: radial-gradient(
+    white 0%,
+    white 30%,
+    transparent 80%,
+    transparent
+  );
+  -webkit-mask-image: radial-gradient(
+    white 0%,
+    white 30%,
+    transparent 80%,
+    transparent
+  );
+}
+
+/* We'll create 20 circle containers with CSS */
+.circleContainer {
+  position: absolute;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  background-image: radial-gradient(
+    hsl(180, 100%, 80%),
+    hsl(180, 100%, 80%) 10%,
+    hsla(180, 100%, 80%, 0) 56%
+  );
+  animation: fadeFrames 2s infinite, scaleFrames 2s infinite;
+}
+
+@keyframes fadeFrames {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleFrames {
+  0% {
+    transform: scale3d(0.4, 0.4, 1);
+  }
+  50% {
+    transform: scale3d(2.2, 2.2, 1);
+  }
+  100% {
+    transform: scale3d(0.4, 0.4, 1);
+  }
+}
+
+/* Define animations for each circle container */
+.circleContainer1 {
+  width: 8px;
+  height: 8px;
+  animation-name: moveFrames1;
+  animation-duration: 30s;
+  animation-delay: 1s;
+}
+
+.circleContainer2 {
+  width: 6px;
+  height: 6px;
+  animation-name: moveFrames2;
+  animation-duration: 34s;
+  animation-delay: 2s;
+}
+
+.circleContainer3 {
+  width: 10px;
+  height: 10px;
+  animation-name: moveFrames3;
+  animation-duration: 28s;
+  animation-delay: 3s;
+}
+
+.circleContainer4 {
+  width: 7px;
+  height: 7px;
+  animation-name: moveFrames4;
+  animation-duration: 32s;
+  animation-delay: 4s;
+}
+
+.circleContainer5 {
+  width: 9px;
+  height: 9px;
+  animation-name: moveFrames5;
+  animation-duration: 36s;
+  animation-delay: 5s;
+}
+
+.circleContainer6 {
+  width: 5px;
+  height: 5px;
+  animation-name: moveFrames6;
+  animation-duration: 29s;
+  animation-delay: 6s;
+}
+
+.circleContainer7 {
+  width: 8px;
+  height: 8px;
+  animation-name: moveFrames7;
+  animation-duration: 33s;
+  animation-delay: 7s;
+}
+
+.circleContainer8 {
+  width: 11px;
+  height: 11px;
+  animation-name: moveFrames8;
+  animation-duration: 31s;
+  animation-delay: 8s;
+}
+
+.circleContainer9 {
+  width: 6px;
+  height: 6px;
+  animation-name: moveFrames9;
+  animation-duration: 35s;
+  animation-delay: 9s;
+}
+
+.circleContainer10 {
+  width: 9px;
+  height: 9px;
+  animation-name: moveFrames10;
+  animation-duration: 30s;
+  animation-delay: 10s;
+}
+
+.circleContainer11 {
+  width: 7px;
+  height: 7px;
+  animation-name: moveFrames11;
+  animation-duration: 32s;
+  animation-delay: 11s;
+}
+
+.circleContainer12 {
+  width: 10px;
+  height: 10px;
+  animation-name: moveFrames12;
+  animation-duration: 28s;
+  animation-delay: 12s;
+}
+
+.circleContainer13 {
+  width: 8px;
+  height: 8px;
+  animation-name: moveFrames13;
+  animation-duration: 34s;
+  animation-delay: 13s;
+}
+
+.circleContainer14 {
+  width: 6px;
+  height: 6px;
+  animation-name: moveFrames14;
+  animation-duration: 31s;
+  animation-delay: 14s;
+}
+
+.circleContainer15 {
+  width: 9px;
+  height: 9px;
+  animation-name: moveFrames15;
+  animation-duration: 29s;
+  animation-delay: 15s;
+}
+
+.circleContainer16 {
+  width: 7px;
+  height: 7px;
+  animation-name: moveFrames16;
+  animation-duration: 33s;
+  animation-delay: 16s;
+}
+
+.circleContainer17 {
+  width: 10px;
+  height: 10px;
+  animation-name: moveFrames17;
+  animation-duration: 35s;
+  animation-delay: 17s;
+}
+
+.circleContainer18 {
+  width: 8px;
+  height: 8px;
+  animation-name: moveFrames18;
+  animation-duration: 30s;
+  animation-delay: 18s;
+}
+
+.circleContainer19 {
+  width: 6px;
+  height: 6px;
+  animation-name: moveFrames19;
+  animation-duration: 32s;
+  animation-delay: 19s;
+}
+
+.circleContainer20 {
+  width: 9px;
+  height: 9px;
+  animation-name: moveFrames20;
+  animation-duration: 28s;
+  animation-delay: 20s;
+}
+
+/* Define movement animations for each circle */
+@keyframes moveFrames1 {
+  from { transform: translate3d(10vw, 110vh, 0); }
+  to { transform: translate3d(80vw, -30vh, 0); }
+}
+
+@keyframes moveFrames2 {
+  from { transform: translate3d(20vw, 105vh, 0); }
+  to { transform: translate3d(90vw, -20vh, 0); }
+}
+
+@keyframes moveFrames3 {
+  from { transform: translate3d(30vw, 115vh, 0); }
+  to { transform: translate3d(10vw, -25vh, 0); }
+}
+
+@keyframes moveFrames4 {
+  from { transform: translate3d(40vw, 108vh, 0); }
+  to { transform: translate3d(70vw, -15vh, 0); }
+}
+
+@keyframes moveFrames5 {
+  from { transform: translate3d(50vw, 112vh, 0); }
+  to { transform: translate3d(30vw, -35vh, 0); }
+}
+
+@keyframes moveFrames6 {
+  from { transform: translate3d(60vw, 106vh, 0); }
+  to { transform: translate3d(50vw, -10vh, 0); }
+}
+
+@keyframes moveFrames7 {
+  from { transform: translate3d(70vw, 114vh, 0); }
+  to { transform: translate3d(20vw, -40vh, 0); }
+}
+
+@keyframes moveFrames8 {
+  from { transform: translate3d(80vw, 109vh, 0); }
+  to { transform: translate3d(60vw, -5vh, 0); }
+}
+
+@keyframes moveFrames9 {
+  from { transform: translate3d(90vw, 113vh, 0); }
+  to { transform: translate3d(40vw, -30vh, 0); }
+}
+
+@keyframes moveFrames10 {
+  from { transform: translate3d(15vw, 107vh, 0); }
+  to { transform: translate3d(85vw, -25vh, 0); }
+}
+
+@keyframes moveFrames11 {
+  from { transform: translate3d(25vw, 111vh, 0); }
+  to { transform: translate3d(35vw, -20vh, 0); }
+}
+
+@keyframes moveFrames12 {
+  from { transform: translate3d(35vw, 104vh, 0); }
+  to { transform: translate3d(75vw, -35vh, 0); }
+}
+
+@keyframes moveFrames13 {
+  from { transform: translate3d(45vw, 116vh, 0); }
+  to { transform: translate3d(15vw, -15vh, 0); }
+}
+
+@keyframes moveFrames14 {
+  from { transform: translate3d(55vw, 103vh, 0); }
+  to { transform: translate3d(95vw, -40vh, 0); }
+}
+
+@keyframes moveFrames15 {
+  from { transform: translate3d(65vw, 117vh, 0); }
+  to { transform: translate3d(25vw, -10vh, 0); }
+}
+
+@keyframes moveFrames16 {
+  from { transform: translate3d(75vw, 102vh, 0); }
+  to { transform: translate3d(65vw, -30vh, 0); }
+}
+
+@keyframes moveFrames17 {
+  from { transform: translate3d(85vw, 118vh, 0); }
+  to { transform: translate3d(5vw, -5vh, 0); }
+}
+
+@keyframes moveFrames18 {
+  from { transform: translate3d(5vw, 101vh, 0); }
+  to { transform: translate3d(55vw, -25vh, 0); }
+}
+
+@keyframes moveFrames19 {
+  from { transform: translate3d(95vw, 119vh, 0); }
+  to { transform: translate3d(45vw, -20vh, 0); }
+}
+
+@keyframes moveFrames20 {
+  from { transform: translate3d(48vw, 100vh, 0); }
+  to { transform: translate3d(38vw, -35vh, 0); }
+} 

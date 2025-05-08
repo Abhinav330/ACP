@@ -1,0 +1,39 @@
+.testCasesHeader {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  align-items: center;
+}
+
+.pointsMismatch {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.pointsMatch {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.pointsInput {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pointsField {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.pointsField:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.1);
+} 

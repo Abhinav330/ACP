@@ -1,0 +1,10 @@
+[{
+  "_id": {
+    "$oid": "67ccef147b28401844ad48c3"
+  },
+  "name": "Basic 1",
+  "description": "",
+  "questions": [],
+  "createdAt": "2025-03-09T01:29:56.795948",
+  "updatedAt": "2025-03-09T01:29:56.795948"
+}]

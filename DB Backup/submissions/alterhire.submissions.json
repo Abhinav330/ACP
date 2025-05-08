@@ -1,0 +1,399 @@
+[{
+  "_id": {
+    "$oid": "67fd949cd59366a72b89347f"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    # Write your code here\r\n    return df",
+  "score": 0,
+  "submitted_at": {
+    "$date": "2025-04-14T23:05:00.090Z"
+  },
+  "status": "failed",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 0,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd94ccd59366a72b893480"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df=df + 1\r\n    # Write your code here\r\n    return df",
+  "score": 0,
+  "submitted_at": {
+    "$date": "2025-04-14T23:05:48.899Z"
+  },
+  "status": "failed",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 0,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd94e4d59366a72b893481"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df=df\r\n    # Write your code here\r\n    return df\r\n\r\nreturn 0",
+  "score": 0,
+  "submitted_at": {
+    "$date": "2025-04-14T23:06:12.436Z"
+  },
+  "status": "failed",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 0,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd94f5d59366a72b893482"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df=df\r\n    # Write your code here\r\n    \r\n\r\nreturn 0",
+  "score": 0,
+  "submitted_at": {
+    "$date": "2025-04-14T23:06:29.041Z"
+  },
+  "status": "failed",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 0,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd957bd59366a72b893483"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df=df\r\n    # Write your code here\r\n    return True",
+  "score": 0,
+  "submitted_at": {
+    "$date": "2025-04-14T23:08:43.377Z"
+  },
+  "status": "failed",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 0,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd9649d59366a72b893484"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = pd.DataFrame(df.iloc[1])\r\n    # Write your code here\r\n    return df",
+  "score": 0,
+  "submitted_at": {
+    "$date": "2025-04-14T23:12:09.836Z"
+  },
+  "status": "failed",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 0,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd96edd59366a72b893485"
+  },
+  "candidate_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = pd.DataFrame({'Day':[1], 'Month':[1], 'Sales':[6.0]})\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-14T23:14:53.072Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 1,
+  "total_test_cases": 1
+},
+{
+  "_id": {
+    "$oid": "67fd984ad59366a72b893486"
+  },
+  "candidate_id": {
+    "$oid": "67fb8cf700b139d1f78c749c"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df =pd.DataFrame({\"Day\": [1], \"Month\": [1], \"Sales\": [6.0]})\r\n    # Write your code here\r\n    return df",
+  "score": 10,
+  "submitted_at": {
+    "$date": "2025-04-14T23:20:42.197Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 1,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "67fd985ed59366a72b893487"
+  },
+  "candidate_id": {
+    "$oid": "67fb8cf700b139d1f78c749c"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df =df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-14T23:21:02.117Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "67feb66a17bc5db714c12296"
+  },
+  "candidate_id": {
+    "$oid": "67feb5ae17bc5db714c12295"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df=df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-15T19:41:30.260Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "67feb78517bc5db714c12297"
+  },
+  "candidate_id": {
+    "$oid": "67feb5ae17bc5db714c12295"
+  },
+  "question_id": {
+    "$oid": "67c7bd6e3d64b7672dea5ce1"
+  },
+  "code_solve": "def convert_to_alpaca_format(prompt_instruction, prompt_input, prompt_output):\r\n\r\n    final_prompt = '''# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\r\n\r\n### Instruction:\r\n{}\r\n\r\n### Input:\r\n{}\r\n\r\n### Response:\r\n{}'''.format(prompt_instruction,prompt_input,prompt_output)\r\n    # Write your code here\r\n    return final_prompt\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n# DO NOT modify the code below\r\ninstruction = input().strip()\r\ninput_text = input().strip()\r\noutput_text = input().strip()\r\nresult = convert_to_alpaca_format(instruction, input_text, output_text)\r\nprint(result)",
+  "score": 25,
+  "submitted_at": {
+    "$date": "2025-04-15T19:46:13.425Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 4,
+  "total_test_cases": 4
+},
+{
+  "_id": {
+    "$oid": "67fee4107776d6cbfe9729cc"
+  },
+  "candidate_id": {
+    "$oid": "67d0be66e779cef5c95534a7"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-15T22:56:16.618Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "68003ee6087cf55a9a3e07cb"
+  },
+  "candidate_id": {
+    "$oid": "67d0be66e779cef5c95534a7"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-16T23:36:06.371Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "6802881862f975e2ba93fc38"
+  },
+  "candidate_id": {
+    "$oid": "6802878562f975e2ba93fc37"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df =df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-18T17:12:56.442Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "680502d6e575384dab0e4551"
+  },
+  "candidate_id": {
+    "$oid": "67d0be66e779cef5c95534a7"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-20T14:21:10.197Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "68050306e575384dab0e4552"
+  },
+  "candidate_id": {
+    "$oid": "67fb8cf700b139d1f78c749c"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df =df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-04-20T14:21:58.942Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "68179b52cade6a0857569fc7"
+  },
+  "candidate_id": {
+    "$oid": "6817955c07947d2592548770"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    # Write your code here\r\n    df =df.dropna()\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-05-04T16:52:34.932Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "681ab128deaade8a79fd4658"
+  },
+  "candidate_id": {
+    "$oid": "6817955c07947d2592548770"
+  },
+  "question_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "code_solve": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    # Write your code here\r\n    return df",
+  "score": 20,
+  "submitted_at": {
+    "$date": "2025-05-07T01:02:32.721Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 2,
+  "total_test_cases": 2
+},
+{
+  "_id": {
+    "$oid": "681ab359deaade8a79fd465a"
+  },
+  "candidate_id": {
+    "$oid": "681ab249deaade8a79fd4659"
+  },
+  "question_id": {
+    "$oid": "67d8893781b375bda8def85a"
+  },
+  "code_solve": "def find_stock_extremes(df: pd.DataFrame) -> tuple[float, float]:\r\n    # write your code here\r\n    # don't forget to return the values.\r\n    return df['Price'].min(), df['Price'].max()",
+  "score": 25,
+  "submitted_at": {
+    "$date": "2025-05-07T01:11:53.000Z"
+  },
+  "status": "success",
+  "execution_time": null,
+  "memory_used": null,
+  "test_cases_passed": 1,
+  "total_test_cases": 1
+}]

@@ -1,0 +1,13 @@
+{
+  "code": "import pandas as pd\nimport numpy as np\ndef remove_missing_data(df):\n    df = df.dropna()\n    return df",
+  "test_cases": [
+    {
+      "input": "{'Id': [1, 2, None], 'Name': ['A', 'B', 'C'], 'Pay_Grade': [6, None, 8]}",
+      "expected_output": "{'Id': [1], 'Name': ['A'], 'Pay_Grade': [6]}"
+    },
+    {
+      "input": "{ 'Id': [1, 2, 3], 'Name': ['A', 'B', 'C'], 'Pay_Grade': [6, 7, 8] }",
+      "expected_output": "{ 'Id': [1, 2, 3], 'Name': ['A', 'B', 'C'], 'Pay_Grade': [6, 7, 8] }"
+    }
+  ]
+} 

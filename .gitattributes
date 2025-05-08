@@ -1,0 +1,30 @@
+# Set default behavior to LF
+* text=auto eol=lf
+
+# Python files
+*.py text eol=lf
+
+# HTML and templates
+*.html text eol=lf
+
+# Environment files
+*.env text eol=lf
+*.env.local text eol=lf
+
+# JSON and manifest files
+*.json text eol=lf
+
+# TypeScript and JavaScript
+*.ts text eol=lf
+*.js text eol=lf
+
+# CSS files
+*.css text eol=lf
+
+# Markdown and config files
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Requirements
+*.txt text eol=lf

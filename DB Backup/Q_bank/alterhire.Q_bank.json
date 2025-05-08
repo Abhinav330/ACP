@@ -1,0 +1,204 @@
+[{
+  "_id": {
+    "$oid": "67c7bd6e3d64b7672dea5ce1"
+  },
+  "title": "Convert Dataset to Alpaca Format",
+  "summary": "Write a function that converts a given dataset into a specific format (Alpaca format).",
+  "description": "Sumit is a data scientist working on a project to train a large language model (LLM) using a custom dataset. The dataset, however, is not in the format required for the model training pipeline. It needs to be converted into the Alpaca format, a standardized structure that the model can process effectively. The Alpaca format consists of a specific way of organizing input-output pairs.\n\nTo help Sumit, you need to automate the process of converting the dataset into the Alpaca format. \n\n**The function should accept three inputs:**\n1. prompt_instruction: A clear instruction specifying how the dataset should be transformed.\n2. prompt_input: The raw data that needs to be converted.\n3. prompt_output: The desired result that shows how the data should look after the transformation.\n\n**The function should return one output:**\n1. final-prompt: the final modified alpaca prompt with inputs.\n\nThe function will take the provided instruction, input, and output format, and return the data converted to the Alpaca format, ready for use in the model training pipeline.\n\n```\nExpected Format:\n# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n### Instruction:\n{instruction}\n\n### Input:\n{input}\n\n### Response:\n{output}\n\n```",
+  "category": [
+    "Data Preprocessing",
+    "Prompt Engineering",
+    "LLM"
+  ],
+  "difficulty": "Medium",
+  "points": 25,
+  "examples": [
+    {
+      "input": "Translate the following English text to French\r\nHello, how are you?\r\nBonjour, comment allez-vous?",
+      "output": "# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\r\n\r\n### Instruction:\r\nTranslate the following English text to French\r\n\r\n### Input:\r\nHello, how are you?\r\n\r\n### Response:\r\nBonjour, comment allez-vous?",
+      "inputLanguage": "plaintext",
+      "outputLanguage": "plaintext",
+      "inputImage": null,
+      "outputImage": null
+    }
+  ],
+  "created_at": {
+    "$date": "2025-03-05T02:56:46.976Z"
+  },
+  "updated_at": {
+    "$date": "2025-03-13T02:23:32.967Z"
+  },
+  "allowedLanguages": [
+    "python"
+  ],
+  "starterCodes": [
+    {
+      "language": "python",
+      "code": "def convert_to_alpaca_format(prompt_instruction, prompt_input, prompt_output):\r\n    # Write your code here\r\n    return final_prompt\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n# DO NOT modify the code below\r\ninstruction = input().strip()\r\ninput_text = input().strip()\r\noutput_text = input().strip()\r\nresult = convert_to_alpaca_format(instruction, input_text, output_text)\r\nprint(result)"
+    }
+  ],
+  "testCases": [
+    {
+      "input": "Translate the following English text to French\r\nHello, how are you?\r\nBonjour, comment allez-vous?",
+      "expected_output": "# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\r\n\r\n### Instruction:\r\nTranslate the following English text to French\r\n\r\n### Input:\r\nHello, how are you?\r\n\r\n### Response:\r\nBonjour, comment allez-vous?",
+      "is_hidden": false,
+      "order": 1,
+      "points": 5
+    },
+    {
+      "input": "Summarize the following text\r\nArtificial Intelligence (AI) is the simulation of human intelligence processes by machines, especially computer systems. These processes include learning (the acquisition of information and rules for using the information), reasoning (using rules to reach approximate or definite conclusions) and self-correction.\r\nA brief overview of AI and its core processes.",
+      "expected_output": "# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\r\n\r\n### Instruction:\r\nSummarize the following text\r\n\r\n### Input:\r\nArtificial Intelligence (AI) is the simulation of human intelligence processes by machines, especially computer systems. These processes include learning (the acquisition of information and rules for using the information), reasoning (using rules to reach approximate or definite conclusions) and self-correction.\r\n\r\n### Response:\r\nA brief overview of AI and its core processes.",
+      "is_hidden": false,
+      "order": 2,
+      "points": 5
+    },
+    {
+      "input": "Convert this text to uppercase\r\nhello world\r\nHELLO WORLD",
+      "expected_output": "# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\r\n\r\n### Instruction:\r\nConvert this text to uppercase\r\n\r\n### Input:\r\nhello world\r\n\r\n### Response:\r\nHELLO WORLD",
+      "is_hidden": false,
+      "order": 3,
+      "points": 5
+    },
+    {
+      "input": "Explain the concept of machine learning\r\nWhat is machine learning and how does it work?\r\nMachine learning is a branch of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.",
+      "expected_output": "# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\r\n\r\n### Instruction:\r\nExplain the concept of machine learning\r\n\r\n### Input:\r\nWhat is machine learning and how does it work?\r\n\r\n### Response:\r\nMachine learning is a branch of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.",
+      "is_hidden": false,
+      "order": 4,
+      "points": 10
+    }
+  ],
+  "docker_runner": "only_python",
+  "images": [],
+  "Q_type": "ai",
+  "working_driver": "def convert_to_alpaca_format(prompt_instruction, prompt_input, prompt_output):\r\n    final_prompt = \"\"\"# Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request. \r\n    \r\n    ### Instruction: \r\n    {} \r\n    \r\n    ### Input: \r\n    {} \r\n    \r\n    ### Response:\r\n    {}\"\"\".format(prompt_instruction,prompt_input,prompt_output)\r\n    return final_prompt\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n# DO NOT modify the code below\r\ninstruction = input().strip()\r\ninput_text = input().strip()\r\noutput_text = input().strip()\r\nresult = convert_to_alpaca_format(instruction, input_text, output_text)\r\nprint(result)"
+},
+{
+  "_id": {
+    "$oid": "67ca61dfa069db7dfc36a3e7"
+  },
+  "title": "Remove Rows with Missing Data",
+  "summary": "Write a function that removes rows with any missing (NaN) values from a dataset.",
+  "description": "In the corporate world, data is often messy and incomplete. For example, a sales team working on forecasting might have a dataset with missing values due to errors in data entry. To ensure the integrity of the analysis, it’s important to clean the data by removing rows that contain missing (NaN) values. In this task, you will write a function that removes all rows with any missing values, making the dataset cleaner and ready for analysis.",
+  "category": [
+    "Data Cleaning",
+    "Pandas"
+  ],
+  "difficulty": "Easy",
+  "points": 20,
+  "examples": [
+    {
+      "input": "",
+      "output": "",
+      "inputLanguage": "plaintext",
+      "outputLanguage": "plaintext",
+      "inputImage": {
+        "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN0AAACECAIAAACbJ7lyAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAAASdEVYdFNvZnR3YXJlAEdyZWVuc2hvdF5VCAUAAApSSURBVHhe7Ztd62ZVGcbnc8xhp30DxYOiAyUQwYKgoE8gDcM0TKg0MDGhGApzIARKWBENvTCIIqMUfwsz0rD5d+CAeqInfYsu5rq5WK61n/3yvOznfpbXj8W499p7r3Wv+/7t9eyxvHDRmHzYS5ORC183Jg1hpb00qQgr7aVJRVhpL00qwkp7aVIRVtpLk4qw0l6aVISV9tKkIqy0lyYVYaW9NKkIK+1lWh597Nt/++e9jz/734fnn33/Bz+M3mODSBAPokJsiDB690dYeUQvtcKqvfn23+OO43H12rP/vf8F48EBTuPCA8av7osVvPz17/7MVaihJ65t4KvrJdvzv7gV9x2D0jy0qlplOffrJd5JWXhQLzV41ezl8ApRGCbocPvQHOglWhuhKvr+vz/eY5wadh0v9WqVS8NeYC83rlBqHvEHXftlK1+l7Il6qSQv/V366nopJ1gPnarxndbjZdmQ5fKerdGkt//0Jg80IHcaxPzO2b9wUHqpkNjKwHQJD16/8ZxWxHdPYavh5kuXr8rLH197RiPv5XWVl4N6VQtB06TlQvRgWaMyIUATsU2+BmFlQi/VzxW2NUOjJVqzVssePI5B2LMdSvStl1+hHAwSjacIgHOpDINxojG2ttJquKF9FjfLy7bt+NaB0iS0qgTVVTaq2VaNL2rVsCLlqup/MMNGwsqEXmo9KrnQJT6i9FUp4+kuaGTkkXlnMOzncemlpuYpRlAP/sSxTtFYG5WT0WppvL/sQaOI0pfLR88uaDS1TXnjSquFVCXQq8KbcfXnz7/ESxoWM3LtI4SVmfdLVQhUSeSlqpa8R2bsgtKNMcvUUyYGzAJwOoWn8gDejIar7WKrnmotuKHtaQfZHQXJVsavhbNxpVUM1eNquOfZn/6Md6Lx2Rh3lLAy8/flyMrxIEslIXCgN3X3mikGDIvRMCaOMT6nYPH68JIoVM6l5ZRtkZdVWsrOmHIDYWVCL1lvNKxZ9zBfuqpT3YC/oLCKpRlbU3qJ0zL7Sm5PXmpk/KnvWq2UC+FpFUO5Rg7VomTqqbgwRFiZyktVQp1aEutdpg/HD4b5kjRl/y5oXqZ7MLOll21gVY9O9XjVo7VzQNygnnZMDbI1CL40STnEyD+6fJWz4B5cqgKrYlBmFCTAyGi4dOeNv7CnXcsmwsoMXrZN0W+6p1yeUoPGVO6OxmTxlFY0viGg9BKnuJM3VI0jaCEs52APB2TDpfLfE1XZ0CNbU85VNkRbLrZsg15uGopeqi5qkwUKKxN6yUKKcnm4xCyoVESpqZ7dmspLwB1FFgJOWvZUKyqDbMvZ9pRC4NJBvcS6OJFaOaYmQsPCy7UPxlCNxktl4djmVCesPKKX+0Ll3L1a5uiElR14qZdVv7DmdAkrT9rL8svGm2UfhJV9eGkpuyGs7OB33PREWGkvTSrCSntpUhFW2kuTirDSXppUhJXwMv5pTCbspcmIvTQZsZcmI/bSZMRemozYS5MRe2kyYi9NRuylyYi9NBmZ5eXjTzz5wb1P+H/CPXvvo4cefiQupAEh3f3r+09duhLnPXLj5guvv3UWJ8cGkdAHtFdfux29Xwb9ugfBR+88pr2klJwb5YeX2dSEjuf3P0fr2Et6kMHLmQ5AGGgDeXAMKZeqOe0lJiiDoARL9T8Q5Ubeq5flrpPBS8QwKSXrUkoy56mSCS/5cnCzJOzJkCAAEbF+/KmDuNARSDWzrYMj0go3CG7AbdwsCXoWbRwTXmKgdndEdha5vwIdeykyeNkKN0hryKBII0x72da7+mXPgL1cB5b+2tPXIdnIp0Ub6syNVmzp5ZyXZk3s5TogALioXQkJh6BtVG2o9LL8IBzH++XJ0BZ7fRBA9ZkIGaoesMnLfe6X7WcBprSX69MWe33a0s80ZPC2ESa8bLdfTIYpj56gCnu5Du0n3GDm29tgZLutjjDhJajcx9CLxF+Hwex0RgYv2+q3CoL2tsqiSaa95BzcMnNulsBerkYpYukGf1oVIQ5029LNEkx7CTh9nv/JocVerglEpAxo2hQrLwGOec9SKcEsL41ZGXtpMmIvTUbspcmIvTQZsZcmI/bSZMRemozYS5ORC18zJg1hpb00qQgr7aVJRVhpL00qwkp7aVIRVtpLk4qw0l6aVISV9tKkIqy0lyYVYaW9NKkIK+2lSUVYudTLN+6+e/O5F+MkBwhJ/w3Ur37zh+jtEWQei42TA4DsIYftFN/45rfe/cd/5ky9+whh5Xwvv/Pd7314/ilmTeUllqrVIrCO1cQyB0u+R2hVW+KlXu4yQlg5x0sOyvnaKY9LFQxWjlARcJx3gYqNdmgvsfUggfgT21D0LvRyxxHCyjlecqeEATqIC/lgXsqMdADKyYrq4EAwe6jv+f0vcBy9y73cZYSwctH3pb08Lut4iezhAGJdvvIT9ldW8VRbOI7Rw0szRxghrOzJy/mLP1FW85KZlHBVYiEA7uQxldClmSOMEFb25CWWzaTEeXdggXNKuzWyCsfY6vRbPG4V7pF/241QElb24SUDK384umRNLwHm4umgVTjVT7meWjTCIGFlB17yvdQr2zGo65zSbk1lFcuNGSurcBtcLE/11MwRRggrT91LBFPmqG+wzIOutLIKML0v3vqlrOIuUDow4iVoRxgnrDxpL+e/hX2wvpcAM0JE9HPqykuWYMRLUI0wTlh50l4iR4in72/KEtR1Tmm3ZtAqFl0/SjxVGHgEl/TUnBHGCStP3Uu8iFhw1ZCduKMvjuIloHyaukw7LpVPzRxhhLBykZfGHJqw0l6aVISV9tKkIqy0lyYVYaW9NKkIK+2lSUVYaS9NKsJKe2lSEVbaS5OKsBJexj+NyYS9NBmxlyYj9tJkxF6ajNhLkxF7aTJiL01G7KXJiL00GbGXJiOzvHz1tdv874zQXn/rLHoTcOPmCwoMDadxoUewuiTJRxhM+Af3Pnn8iSejt6HUZmlppr3E6GfvffTQw4/g+KlLV87vf55Hzd/+/o7ywiz0qiZVyJB5xCAdkXP4ACt4qQSXdBu3j0Wlmfby2tPXKSUp50sFgsT7k+ed2Rd839iOvjpuTDJsU86hByQpRcQ92t3msPj7EpNtekWODhbfn5daVIbVtdUfjAq3VZvXUm368ZLvLnaXOO+ODF4O7pdtzhEn+svdsXpwksVetlMmIW1g+yKDlwAxlN+Xgx91bajtL/s4y7xEHKk2S76v/PbqeKckSbwECIM5H5QSbPJyfo3meikD5iu/Mlhz33Zm8LLSi7/Obc43ebnn/ZKDbno58oAE5Q9yazJ4iQCqj6XBnLe37f/7kiOexKcblp3qM2O/HN1L/mZWMSDb8LLKeSvr0tJMe9m6nxbvl4emlWEw59zLyt1xqUUTXmI+zDp/+10TLP6Pd+7GyYM3MvPn7+5k8JLCwcXylFFRFUWIA/m6dLMEs7zkX77KdvQEAf6sKKSlKz85kPMMaa+U0EZQeQlwvHVpZv29x5iVsZcmI/bSZMRemozYS5MRe2kyYi9NPi5e/D/ccmnPtAyqKwAAAABJRU5ErkJggg==",
+        "caption": ""
+      },
+      "outputImage": {
+        "url": "data:image/png;base64,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",
+        "caption": ""
+      }
+    }
+  ],
+  "starterCodes": [
+    {
+      "language": "python",
+      "code": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    # Write your code here\r\n    return df"
+    }
+  ],
+  "allowedLanguages": [
+    "python"
+  ],
+  "testCases": [
+    {
+      "input": "{'Day': {0: 1, 1: 2, 2: 3}, 'Month': {0: 1.0, 1: 1.0, 2: nan}, 'Sales': {0: 6.0, 1: nan, 2: 8.0}}",
+      "expected_output": "{'Day': {0: 1}, 'Month': {0: 1.0}, 'Sales': {0: 6.0}}",
+      "is_hidden": false,
+      "order": 1,
+      "points": 10
+    },
+    {
+      "input": "{'Day': {0: 1, 1: 2, 2: 3}, 'Month': {0: 1.0, 1: 1.0, 2: 7.0}, 'Sales': {0: 6.0, 1: nan, 2: 8.0}}",
+      "expected_output": "{'Day': {0: 1, 2: 3}, 'Month': {0: 1.0, 2: 7.0}, 'Sales': {0: 6.0, 2: 8.0}}",
+      "is_hidden": true,
+      "order": 2,
+      "points": 10
+    }
+  ],
+  "docker_runner": "pandas",
+  "images": [],
+  "created_at": {
+    "$date": "2025-03-07T03:02:55.977Z"
+  },
+  "updated_at": {
+    "$date": "2025-04-14T23:18:45.137Z"
+  },
+  "Q_type": "pandas",
+  "working_driver": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    return df"
+},
+{
+  "_id": {
+    "$oid": "67d8893781b375bda8def85a"
+  },
+  "title": "Find Minimum and Maximum Stock Price",
+  "summary": "Find Min and Max for a Dataset.",
+  "description": "Mr. XYZ works in the ABC Company and has been monitoring the company's stock prices over the past few months. Recently, he noticed some irregularities in the stock prices, which could be a result of data entry errors or market fluctuations. To better understand the situation, Mr. XYZ wants to quickly find the minimum and maximum stock prices from the dataset. He needs your help to create a function that will calculate these values and allow him to identify any issues or abnormalities in the data.\n\nThe data is provided as a DataFrame, and your task is to write a function that computes and returns the minimum and maximum stock prices from the dataset.\n**Function Signature:**\n``\ndef find_stock_extremes(df: pd.DataFrame) -> tuple[float, float]:\n``\n**Input:**\n\ndf (pandas DataFrame): A DataFrame containing stock data. The column of interest is named \"Price\", which contains the stock prices.\n**Output:**\n\nReturns a tuple containing two values: the minimum stock price and the maximum stock price from the \"Price\" column.",
+  "category": [
+    "Pandas"
+  ],
+  "difficulty": "Easy",
+  "points": 25,
+  "examples": [
+    {
+      "input": "",
+      "output": "(150.0, 200.5)",
+      "inputLanguage": "plaintext",
+      "outputLanguage": "plaintext",
+      "inputImage": {
+        "url": "data:image/png;base64,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",
+        "caption": ""
+      },
+      "outputImage": null
+    },
+    {
+      "input": "",
+      "output": "(110.8, 145.2)",
+      "inputLanguage": "plaintext",
+      "outputLanguage": "plaintext",
+      "inputImage": {
+        "url": "data:image/png;base64,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",
+        "caption": ""
+      },
+      "outputImage": null
+    }
+  ],
+  "starterCodes": [
+    {
+      "language": "python",
+      "code": "def find_stock_extremes(df: pd.DataFrame) -> tuple[float, float]:\r\n    # write your code here\r\n    # don't forget to return the values."
+    }
+  ],
+  "allowedLanguages": [
+    "python"
+  ],
+  "testCases": [
+    {
+      "input": "{'Date': {0: '2025-01-01', 1: '2025-01-02', 2: '2025-01-03'}, 'Price': {0: 150.0, 1: 200.5, 2: 180.3}}",
+      "expected_output": "(150.0, 200.5)",
+      "is_hidden": false,
+      "order": 1,
+      "points": 25
+    }
+  ],
+  "docker_runner": "pandas",
+  "images": [],
+  "Q_type": "pandas",
+  "working_driver": "def find_stock_extremes(df: pd.DataFrame) -> tuple[float, float]:\r\n    return df['Price'].min(), df['Price'].max()",
+  "created_at": {
+    "$date": "2025-03-17T20:42:31.842Z"
+  },
+  "updated_at": {
+    "$date": "2025-03-17T20:58:32.316Z"
+  }
+}]

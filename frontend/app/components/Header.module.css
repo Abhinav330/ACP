@@ -1,0 +1,267 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 90px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  height: 100%;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 12px 0;
+}
+
+.logoText {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #16588e;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #16588e 0%, #2a5298 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logoText:hover {
+  transform: translateY(-1px);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navLink {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #16588e;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.userName {
+  font-weight: 600;
+  color: #16588e;
+  white-space: nowrap;
+}
+
+.userEmailText {
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+  font-size: 0.95rem;
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loginButton, .logoutButton, .signupButton {
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.loginButton {
+  background-color: transparent;
+  color: #16588e;
+  border: 2px solid #16588e;
+}
+
+.loginButton:hover {
+  background-color: rgba(22, 88, 142, 0.1);
+}
+
+.signupButton {
+  background-color: #16588e;
+  color: white;
+  border: none;
+}
+
+.signupButton:hover {
+  background-color: #124b7a;
+}
+
+.logoutButton {
+  border: 2px solid #16588e;
+  background-color: transparent;
+  color: #16588e;
+}
+
+.logoutButton:hover {
+  background-color: rgba(22, 88, 142, 0.1);
+}
+
+.problemsLink {
+  font-weight: 600;
+  color: var(--primary-color);
+  position: relative;
+}
+
+.problemsLink:hover {
+  color: #124b7a;
+}
+
+.problemsLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+  transform: scaleX(0);
+  transition: transform 0.2s ease-in-out;
+}
+
+.problemsLink:hover::after {
+  transform: scaleX(1);
+}
+
+.leaderboardLink {
+  font-weight: 600;
+  color: var(--primary-color);
+  position: relative;
+}
+
+.leaderboardLink:hover {
+  color: #124b7a;
+}
+
+.leaderboardLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+  transform: scaleX(0);
+  transition: transform 0.2s ease-in-out;
+}
+
+.leaderboardLink:hover::after {
+  transform: scaleX(1);
+}
+
+.adminBadge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #000;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.adminLink {
+  color: #FFD700 !important;
+  font-weight: 600;
+}
+
+.adminLink:hover {
+  color: #FFA500 !important;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+  }
+  
+  .nav {
+    display: none;
+  }
+  
+  .leftSection,
+  .rightSection {
+    gap: 1rem;
+  }
+  
+  .logo {
+    height: 32px;
+  }
+  
+  .logoText {
+    font-size: 1.6rem;
+    letter-spacing: -0.3px;
+  }
+  
+  .userInfo {
+    max-width: 200px;
+  }
+  
+  .userEmailText {
+    display: none;
+  }
+
+  .authButtons {
+    gap: 0.5rem;
+  }
+
+  .loginButton, .signupButton, .logoutButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+} 

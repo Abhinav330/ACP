@@ -1,0 +1,301 @@
+[{
+  "_id": {
+    "$oid": "681a1b23562dc4219c203b20"
+  },
+  "user_id": "67d0be66e779cef5c95534a7",
+  "username": "user1 user1",
+  "email": "user1@gmail.com",
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "phone": "",
+  "company": "na",
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "na"
+  },
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  },
+  "achievements": [],
+  "badges": [],
+  "preferred_languages": [],
+  "created_at": {
+    "$date": "2025-03-11T22:51:18.135Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-06T14:22:27.793Z"
+  },
+  "total_score": 20,
+  "total_questions_solved": 1,
+  "contribution_data": [
+    {
+      "count": 1,
+      "date": "2025-04-20"
+    },
+    {
+      "count": 1,
+      "date": "2025-04-15"
+    },
+    {
+      "count": 1,
+      "date": "2025-04-16"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "681a1b23562dc4219c203b21"
+  },
+  "user_id": "67fd8457edfe1c853007ecaa",
+  "username": "Sriram Varma Bhupatiraju",
+  "email": "sriramvarma12@gmail.com",
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "phone": "07587766135",
+  "company": "Na",
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "Na"
+  },
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  },
+  "achievements": [],
+  "badges": [],
+  "preferred_languages": [],
+  "created_at": {
+    "$date": "2025-04-14T21:55:35.856Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-06T14:22:27.801Z"
+  },
+  "total_score": 20,
+  "total_questions_solved": 1,
+  "contribution_data": [
+    {
+      "count": 1,
+      "date": "2025-04-14"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "681a1b23562dc4219c203b22"
+  },
+  "user_id": "67feb5ae17bc5db714c12295",
+  "username": "Meliza Villanueva",
+  "email": "melizav@gmail.com",
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "phone": "1234567890",
+  "company": "Walking",
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "Walking"
+  },
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  },
+  "achievements": [],
+  "badges": [],
+  "preferred_languages": [],
+  "created_at": {
+    "$date": "2025-04-15T19:38:22.929Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-06T14:22:27.808Z"
+  },
+  "total_score": 45,
+  "total_questions_solved": 2,
+  "contribution_data": [
+    {
+      "count": 2,
+      "date": "2025-04-15"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "681a1b23562dc4219c203b23"
+  },
+  "user_id": "6802878562f975e2ba93fc37",
+  "username": "Irfan",
+  "email": "izadie8@gmail.com",
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "phone": "",
+  "company": "Movie app",
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "Movie app"
+  },
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  },
+  "achievements": [],
+  "badges": [],
+  "preferred_languages": [],
+  "created_at": {
+    "$date": "2025-04-18T17:10:29.433Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-06T14:22:27.815Z"
+  },
+  "total_score": 20,
+  "total_questions_solved": 1,
+  "contribution_data": [
+    {
+      "count": 1,
+      "date": "2025-04-18"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "681a1b23562dc4219c203b24"
+  },
+  "user_id": "680e7d8e0a64b9e0975b58b8",
+  "username": "",
+  "email": "abhinav33303@gmail.com",
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "phone": null,
+  "company": "Algo Crafters",
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "Algo Crafters"
+  },
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  },
+  "achievements": [],
+  "badges": [],
+  "preferred_languages": [],
+  "created_at": {
+    "$date": "2025-04-27T18:55:10.505Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-06T14:22:27.822Z"
+  },
+  "total_score": 0,
+  "total_questions_solved": 0,
+  "contribution_data": []
+},
+{
+  "_id": {
+    "$oid": "681a1b23562dc4219c203b25"
+  },
+  "user_id": "6817955c07947d2592548770",
+  "username": "Abhinav Abhinav",
+  "email": "rogerblaack30@gmail.com",
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "phone": null,
+  "company": "Student",
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "Student"
+  },
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  },
+  "achievements": [],
+  "badges": [],
+  "preferred_languages": [],
+  "created_at": {
+    "$date": "2025-05-04T16:27:08.749Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-07T01:02:32.784Z"
+  },
+  "total_score": 20,
+  "total_questions_solved": 1,
+  "contribution_data": [
+    {
+      "count": 1,
+      "date": "2025-05-07"
+    },
+    {
+      "count": 1,
+      "date": "2025-05-04"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "681ab35911581a3c0d4f598d"
+  },
+  "user_id": "681ab249deaade8a79fd4659",
+  "achievements": [],
+  "badges": [],
+  "bio": "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+  "company": "algocrafters",
+  "contribution_data": [
+    {
+      "count": 1,
+      "date": "2025-05-07"
+    }
+  ],
+  "created_at": {
+    "$date": "2025-05-07T01:07:21.039Z"
+  },
+  "email": "algocrafters.platform@gmail.com",
+  "phone": null,
+  "preferred_languages": [],
+  "social_links": {
+    "github": "",
+    "linkedin": "",
+    "portfolio": "",
+    "company": "algocrafters"
+  },
+  "total_questions_solved": 1,
+  "total_score": 25,
+  "updated_at": {
+    "$date": "2025-05-07T01:11:53.045Z"
+  },
+  "username": "Algo  Crafters",
+  "visibility_settings": {
+    "github": true,
+    "linkedin": true,
+    "portfolio": true,
+    "company": true,
+    "email": false,
+    "phone": false
+  }
+}]

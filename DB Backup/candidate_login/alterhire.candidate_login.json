@@ -1,0 +1,170 @@
+[{
+  "_id": {
+    "$oid": "67d0be66e779cef5c95534a7"
+  },
+  "firstName": "user1",
+  "lastName": "user1",
+  "email": "user1@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJDNUUXJKVy9XL3VsWjNhWDNRdlpKRmVBZ0ZkNzJmQUwwMjRVTEZNWmwyTmg1cmw3NGkyMVBT",
+      "subType": "00"
+    }
+  },
+  "phone": "",
+  "company": "na",
+  "is_admin": false,
+  "is_restricted": false,
+  "created_at": {
+    "$date": "2025-03-11T22:51:18.135Z"
+  },
+  "total_score": 20
+},
+{
+  "_id": {
+    "$oid": "67fd8457edfe1c853007ecaa"
+  },
+  "email": "sriramvarma12@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJEgudjI3RGNienVRdWRWWkpQSldDSC5vbzkxUEVvbWYxdWhKcU52aHJldDMzV1oySXFuNm5L",
+      "subType": "00"
+    }
+  },
+  "firstName": "Sriram Varma",
+  "lastName": "Bhupatiraju",
+  "phone": "07587766135",
+  "company": "Na",
+  "is_admin": false,
+  "is_restricted": false,
+  "created_at": {
+    "$date": "2025-04-14T21:55:35.856Z"
+  },
+  "total_score": 0
+},
+{
+  "_id": {
+    "$oid": "67feb5ae17bc5db714c12295"
+  },
+  "email": "melizav@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJHlXMldWZERLdTNkUXVPcTEvR1hETS42UkNQczBzUk9zcW1kU0VLMkplYnlnM2ZSQUxiTW9l",
+      "subType": "00"
+    }
+  },
+  "firstName": "Meliza",
+  "lastName": "Villanueva",
+  "phone": "1234567890",
+  "company": "Walking",
+  "is_admin": false,
+  "is_restricted": false,
+  "created_at": {
+    "$date": "2025-04-15T19:38:22.929Z"
+  },
+  "total_score": 25
+},
+{
+  "_id": {
+    "$oid": "6802878562f975e2ba93fc37"
+  },
+  "email": "izadie8@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJEwxWEQ2NllOWlZpTEdqa21rWEFzZy5aYjhTQ0ZlY1ZCLmVERm1WYXN1NHlwNkI4cklMZGJX",
+      "subType": "00"
+    }
+  },
+  "firstName": "",
+  "lastName": "Irfan",
+  "phone": "",
+  "company": "Movie app",
+  "is_admin": false,
+  "is_restricted": false,
+  "created_at": {
+    "$date": "2025-04-18T17:10:29.433Z"
+  },
+  "total_score": 0
+},
+{
+  "_id": {
+    "$oid": "680e7d8e0a64b9e0975b58b8"
+  },
+  "email": "abhinav33303@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJHlvejV2QlhRYXBpQ1ZqRkRrUTFFWHVYUDBSdkU0RXZZQ2o4b01OeE1DanpZeDhYZVBKYkN5",
+      "subType": "00"
+    }
+  },
+  "name": "Abhinav Admin",
+  "phone": null,
+  "company": "Algo Crafters",
+  "is_admin": true,
+  "is_restricted": false,
+  "is_verified": true,
+  "otp": null,
+  "otp_expiry": null,
+  "created_at": {
+    "$date": "2025-04-27T18:55:10.505Z"
+  },
+  "updated_at": {
+    "$date": "2025-04-27T18:55:10.505Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6817955c07947d2592548770"
+  },
+  "email": "rogerblaack30@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJFZpalhsSDBkZkFnNzlnMUs1dEh1eWU3b1lVSThkYWl5cTFsL1IuZ0NMRmw0QjBIT1hCR1Fh",
+      "subType": "00"
+    }
+  },
+  "firstName": "Abhinav",
+  "lastName": "Abhinav",
+  "phone": null,
+  "company": "Student",
+  "is_admin": false,
+  "is_restricted": false,
+  "is_verified": true,
+  "otp": null,
+  "otp_expiry": null,
+  "created_at": {
+    "$date": "2025-05-04T16:27:08.749Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-04T16:27:08.749Z"
+  },
+  "total_score": 40
+},
+{
+  "_id": {
+    "$oid": "681ab249deaade8a79fd4659"
+  },
+  "email": "algocrafters.platform@gmail.com",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJGVTSFlXWTFwWUwxNG1mb3JTeTl0Mk9vL2hMbGRpRUpJaTNpR2hqb1FIYXMxTlhaSHRnZ2F1",
+      "subType": "00"
+    }
+  },
+  "firstName": "Algo ",
+  "lastName": "Crafters",
+  "phone": null,
+  "company": "algocrafters",
+  "is_admin": false,
+  "is_restricted": false,
+  "is_verified": true,
+  "otp": null,
+  "otp_expiry": null,
+  "created_at": {
+    "$date": "2025-05-07T01:07:21.039Z"
+  },
+  "updated_at": {
+    "$date": "2025-05-07T01:07:21.039Z"
+  },
+  "total_score": 25
+}]
