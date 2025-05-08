@@ -8,17 +8,17 @@ const HomePage = () => {
   return (
     <div className={styles.container}>
       {/* Hero Section */}
-      <section className={styles.hero} style={{position: 'relative', overflow: 'hidden'}}>
+      <section className={styles.hero}>
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className={styles.heroVideo}
           src="/back.mp4"
         />
-        <div className="absolute inset-0 bg-black/60 z-10" />
-        <div className={styles.heroContent + ' relative z-20'}>
+        <div className={styles.heroOverlay} />
+        <div className={styles.heroContent}>
           <h1>Transform Your Data Science Knowledge</h1>
           <p className={styles.subtitle}>
             Bridge the gap between theory and practice with real-world data science challenges
