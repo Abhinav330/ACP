@@ -387,7 +387,9 @@ async def login(credentials: UserLogin, request: Request):
         access_token = create_access_token({
             "sub": str(user["_id"]),
             "email": user["email"],
-            "name": user.get("name", ""),
+            "firstName": user.get("firstName", ""),
+            "lastName": user.get("lastName", ""),
+            "name": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
             "is_admin": user.get("is_admin", False),
             "is_restricted": user.get("is_restricted", False)
         })
@@ -398,7 +400,9 @@ async def login(credentials: UserLogin, request: Request):
             "user": {
                 "id": str(user["_id"]),
                 "email": user["email"],
-                "name": user.get("name", ""),
+                "firstName": user.get("firstName", ""),
+                "lastName": user.get("lastName", ""),
+                "name": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
                 "is_admin": user.get("is_admin", False),
                 "is_restricted": user.get("is_restricted", False),
             }

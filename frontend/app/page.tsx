@@ -27,8 +27,8 @@ const HomePage = () => {
             <Link href="/signup" className={styles.primaryButton}>
               Start Learning Free
             </Link>
-            <Link href="/problems" className={styles.secondaryButton}>
-              Explore Problems
+            <Link href="/learning-hub" className={styles.secondaryButton}>
+              Explore
             </Link>
           </div>
         </div>

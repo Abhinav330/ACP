@@ -3,12 +3,8 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import styles from '../login/login.module.css';
 
 type FormStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -69,19 +65,19 @@ function ResetPasswordContent() {
   if (!token) {
     return (
       <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <Card className="w-[400px]">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Invalid Reset Link</CardTitle>
-            <CardDescription className="text-center">
+        <div className="w-[400px]">
+          <div>
+            <div className="text-2xl text-center">Invalid Reset Link</div>
+            <div className="text-center">
               This password reset link is invalid or has expired. Please request a new one.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center">
-            <Button variant="outline" onClick={() => router.push('/forgot-password')}>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <button variant="outline" onClick={() => router.push('/forgot-password')}>
               Request New Link
-            </Button>
-          </CardFooter>
-        </Card>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -89,81 +85,69 @@ function ResetPasswordContent() {
   if (formStatus === 'success') {
     return (
       <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <Card className="w-[400px]">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Password Reset Successful</CardTitle>
-            <CardDescription className="text-center">
+        <div className="w-[400px]">
+          <div>
+            <div className="text-2xl text-center">Password Reset Successful</div>
+            <div className="text-center">
               Your password has been reset successfully. You can now log in with your new password.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
+            </div>
+          </div>
+          <div className="flex justify-center">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="outline" onClick={() => router.push('/login')}>
+          </div>
+          <div className="flex justify-center">
+            <button variant="outline" onClick={() => router.push('/login')}>
               Back to Login
-            </Button>
-          </CardFooter>
-        </Card>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
-          <CardDescription className="text-center">
-            Enter your new password below
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {formStatus === 'error' && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                disabled={formStatus === 'loading'}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                disabled={formStatus === 'loading'}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              className="w-full"
+      <div className={styles.formWrapper}>
+        <h2 className={styles.title}>Reset Password</h2>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label htmlFor="password">New Password</label>
+            <input
+              id="password"
+              className={styles.input}
+              name="password"
+              type="password"
+              required
               disabled={formStatus === 'loading'}
-            >
-              {formStatus === 'loading' ? 'Resetting password...' : 'Reset Password'}
-            </Button>
-            <div className="text-center text-sm">
-              Remember your password?{' '}
-              <Link href="/login" className="text-primary hover:underline">
-                Sign in
-              </Link>
-            </div>
-          </CardFooter>
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="confirmPassword">Confirm New Password</label>
+            <input
+              id="confirmPassword"
+              className={styles.input}
+              name="confirmPassword"
+              type="password"
+              required
+              disabled={formStatus === 'loading'}
+            />
+          </div>
+          {formStatus === 'error' && (
+            <div className={styles.error}>{errorMessage}</div>
+          )}
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={formStatus === 'loading'}
+          >
+            {formStatus === 'loading' ? 'Resetting password...' : 'Reset Password'}
+          </button>
+          <div className={styles.signupLink}>
+            Remember your password?{' '}
+            <Link href="/login">Sign in</Link>
+          </div>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }
@@ -172,14 +156,14 @@ export default function ResetPassword() {
   return (
     <Suspense fallback={
       <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Loading...</CardTitle>
-          </CardHeader>
-          <CardContent className="flex justify-center">
+        <div className="w-full max-w-md">
+          <div>
+            <div className="text-2xl text-center">Loading...</div>
+          </div>
+          <div className="flex justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     }>
       <ResetPasswordContent />

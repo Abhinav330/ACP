@@ -13,6 +13,8 @@ const Header: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Session Status:', status);
+    console.log('Session Data:', session);
     setIsLoading(false);
   }, [session, status]);
 
@@ -40,7 +42,7 @@ const Header: React.FC = () => {
           </div>
         </Link>
         <nav className={styles.nav}>
-          <Link href="/about" className={styles.navLink}>About Us</Link>
+          
           {user ? (
             <>
               {user.is_admin ? (
@@ -51,18 +53,22 @@ const Header: React.FC = () => {
                 </>
               ) : (
                 <>
+                  <Link href="/learning-hub" className={`${styles.navLink} ${styles.problemsLink}`}>Learning Hub</Link>
                   <Link href="/problems" className={`${styles.navLink} ${styles.problemsLink}`}>
                     Problems
                   </Link>
                   <Link href="/leaderboard" className={`${styles.navLink} ${styles.leaderboardLink}`}>
                     Leaderboard
                   </Link>
+                  <Link href="/about" className={`${styles.navLink} ${styles.leaderboardLink}`}>About Us</Link>
                 </>
               )}
             </>
+            
           ) : (
             <>
               <Link href="/pricing" className={styles.navLink}>Pricing</Link>
+              <Link href="/about" className={`${styles.navLink} ${styles.leaderboardLink}`}>About Us</Link>
             </>
           )}
         </nav>

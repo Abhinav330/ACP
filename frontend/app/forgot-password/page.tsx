@@ -3,12 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import styles from '../login/login.module.css';
 
 type FormStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -48,72 +44,59 @@ export default function ForgotPassword() {
   if (formStatus === 'success') {
     return (
       <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <Card className="w-[400px]">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Check your email</CardTitle>
-            <CardDescription className="text-center">
+        <div className="w-[400px]">
+          <div>
+            <div className="text-2xl text-center">Check your email</div>
+            <div className="text-center">
               We've sent you a password reset link. Please check your email to reset your password.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
+            </div>
+          </div>
+          <div className="flex justify-center">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="outline" onClick={() => router.push('/login')}>
+          </div>
+          <div className="flex justify-center">
+            <button variant="outline" onClick={() => router.push('/login')}>
               Back to Login
-            </Button>
-          </CardFooter>
-        </Card>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Forgot Password</CardTitle>
-          <CardDescription className="text-center">
-            Enter your email address and we'll send you a link to reset your password
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {formStatus === 'error' && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="john@example.com"
-                required
-                disabled={formStatus === 'loading'}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              className="w-full"
+      <div className={styles.formWrapper}>
+        <h2 className={styles.title}>Forgot Password</h2>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              className={styles.input}
+              name="email"
+              type="email"
+              placeholder="john@example.com"
+              required
               disabled={formStatus === 'loading'}
-            >
-              {formStatus === 'loading' ? 'Sending reset link...' : 'Send Reset Link'}
-            </Button>
-            <div className="text-center text-sm">
-              Remember your password?{' '}
-              <Link href="/login" className="text-primary hover:underline">
-                Sign in
-              </Link>
-            </div>
-          </CardFooter>
+            />
+          </div>
+          {formStatus === 'error' && (
+            <div className={styles.error}>{errorMessage}</div>
+          )}
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={formStatus === 'loading'}
+          >
+            {formStatus === 'loading' ? 'Sending reset link...' : 'Send Reset Link'}
+          </button>
+          <div className={styles.signupLink}>
+            Remember your password?{' '}
+            <Link href="/login">Sign in</Link>
+          </div>
         </form>
-      </Card>
+      </div>
     </div>
   );
 } 

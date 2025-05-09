@@ -4,15 +4,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, useSession } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import styles from './login.module.css';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -46,16 +42,10 @@ function LoginContent() {
         return;
       }
 
-      // Handle admin redirection
-      if (session.user.is_admin) {
-        router.replace('/admin/questions');
-        return;
-      }
-
-      // Handle regular user redirection
-      router.replace(callbackUrl);
+      // Redirect all users to learning hub
+      router.replace('/learning-hub');
     }
-  }, [session, status, router, callbackUrl]);
+  }, [session, status, router]);
 
   const onSubmit = async (data: LoginFormData) => {
     setFormStatus('loading');
@@ -96,11 +86,11 @@ function LoginContent() {
   if (status === 'loading') {
     return (
       <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <Card className="w-[400px]">
-          <CardContent className="flex justify-center py-6">
+        <div className="w-[400px]">
+          <div className="flex justify-center py-6">
             <Loader2 className="h-8 w-8 animate-spin" />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -116,48 +106,46 @@ function LoginContent() {
         src="/back.mp4"
       />
       <div className="container flex h-full w-full flex-col items-center justify-center relative z-20">
-        <Card className="loginCardResponsive bg-white/90 shadow-2xl">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
+        <div className={styles.formWrapper}>
+          <h2 className={styles.title}>Login</h2>
+          <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+            <div className={styles.formGroup}>
+              <label htmlFor="email">Email</label>
+              <input
                 id="email"
+                className={styles.input}
                 type="email"
                 placeholder="Enter your email"
                 {...register('email')}
                 disabled={formStatus === 'loading'}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className={styles.error}>{errors.email.message}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
+            <div className={styles.formGroup}>
+              <label htmlFor="password">Password</label>
+              <input
                 id="password"
+                className={styles.input}
                 type="password"
                 placeholder="Enter your password"
                 {...register('password')}
                 disabled={formStatus === 'loading'}
               />
               {errors.password && (
-                <p className="text-sm text-red-500">{errors.password.message}</p>
+                <p className={styles.error}>{errors.password.message}</p>
               )}
             </div>
             {errorMessage && (
-              <Alert variant="destructive">
+              <div className={styles.error}>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
+                <span>{errorMessage}</span>
+              </div>
             )}
-            <Button
+            <button
               type="submit"
-              className="w-full"
+              className={styles.submitButton}
               disabled={formStatus === 'loading'}
             >
               {formStatus === 'loading' ? (
@@ -168,18 +156,13 @@ function LoginContent() {
               ) : (
                 'Sign in'
               )}
-            </Button>
+            </button>
+            <div className={styles.signupLink}>
+              Don't have an account?{' '}
+              <Link href="/signup">Sign up</Link>
+            </div>
           </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-500">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+        </div>
       </div>
     </div>
   );
@@ -189,14 +172,14 @@ export default function Login() {
   return (
     <Suspense fallback={
       <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Loading...</CardTitle>
-          </CardHeader>
-          <CardContent className="flex justify-center">
+        <div className="w-full max-w-md">
+          <div>
+            <h2 className="text-2xl text-center">Loading...</h2>
+          </div>
+          <div className="flex justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     }>
       <LoginContent />

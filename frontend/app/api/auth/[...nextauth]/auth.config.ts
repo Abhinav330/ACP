@@ -5,6 +5,8 @@ import { User as NextAuthUser } from 'next-auth';
 interface User extends NextAuthUser {
   id: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   name: string;
   is_admin: boolean;
   is_restricted: boolean;
@@ -49,7 +51,9 @@ export const authOptions: NextAuthOptions = {
           return {
             id: data.user.id,
             email: data.user.email,
-            name: data.user.name,
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+            name: `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim(),
             is_admin: data.user.is_admin,
             is_restricted: data.user.is_restricted,
             token: data.access_token,
@@ -66,7 +70,9 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.name = user.name;
+        token.firstName = (user as any).firstName;
+        token.lastName = (user as any).lastName;
+        token.name = user.name || '';
         token.is_admin = user.is_admin;
         token.is_restricted = user.is_restricted;
         token.token = user.token;
@@ -82,7 +88,9 @@ export const authOptions: NextAuthOptions = {
           is_admin: token.is_admin as boolean,
           is_restricted: token.is_restricted as boolean,
           token: token.token as string,
-        };
+          firstName: (token as any).firstName as string,
+          lastName: (token as any).lastName as string,
+        } as any;
       }
       return session;
     },

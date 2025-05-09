@@ -2,12 +2,8 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import styles from '../login/login.module.css';
 
 type Status = 'loading' | 'success' | 'error' | 'idle';
 
@@ -95,98 +91,72 @@ function VerifyEmailContent() {
   if (status === 'success') {
     return (
       <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Email Verified</CardTitle>
-            <CardDescription className="text-center">
+        <div className="w-full max-w-md">
+          <div>
+            <div className="text-2xl text-center">Email Verified</div>
+            <div className="text-center">
               Your email has been verified successfully!
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Alert variant="default">
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <div>
               <CheckCircle2 className="h-4 w-4" />
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button
+              <div>{message}</div>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <button
               onClick={() => router.push('/login')}
               className="w-full"
             >
               Go to Login
-            </Button>
-          </CardFooter>
-        </Card>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-screen py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Verify Your Email</CardTitle>
-          <CardDescription className="text-center">
-            Enter the 4-digit verification code sent to {email}
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {status === 'error' && (
-              <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
-                <AlertDescription>{message}</AlertDescription>
-              </Alert>
-            )}
-            {message && status !== 'error' && (
-              <Alert variant="default">
-                <AlertDescription>{message}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="otp">Verification Code</Label>
-              <Input
-                id="otp"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Enter 4-digit code"
-                value={otp}
-                onChange={handleOtpChange}
-                maxLength={4}
-                disabled={status === 'loading'}
-                className="text-center text-2xl tracking-widest"
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={status === 'loading'}
-            >
-              {status === 'loading' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                'Verify Email'
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleResendOTP}
-              disabled={status === 'loading'}
-            >
-              Resend Code
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+    <div className={styles.formWrapper}>
+      <h2 className={styles.title}>Verify Your Email</h2>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.formGroup}>
+          <label htmlFor="otp">Verification Code</label>
+          <input
+            id="otp"
+            className={styles.input}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="Enter 4-digit code"
+            value={otp}
+            onChange={handleOtpChange}
+            maxLength={4}
+            disabled={status === 'loading'}
+            required
+          />
+        </div>
+        {status === 'error' && (
+          <div className={styles.error}>{message}</div>
+        )}
+        <button
+          type="submit"
+          className={styles.submitButton}
+          disabled={status === 'loading'}
+        >
+          {status === 'loading' ? 'Verifying...' : 'Verify Email'}
+        </button>
+        <button
+          type="button"
+          className={styles.submitButton}
+          onClick={handleResendOTP}
+          disabled={status === 'loading'}
+          style={{ marginTop: 8 }}
+        >
+          Resend Code
+        </button>
+      </form>
     </div>
   );
 }
@@ -195,14 +165,14 @@ export default function VerifyEmail() {
   return (
     <Suspense fallback={
       <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Loading...</CardTitle>
-          </CardHeader>
-          <CardContent className="flex justify-center">
+        <div className="w-full max-w-md">
+          <div>
+            <div className="text-2xl text-center">Loading...</div>
+          </div>
+          <div className="flex justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     }>
       <VerifyEmailContent />

@@ -82,3 +82,6 @@ Thumbs.db
 
 # Requirements
 *.txt text eol=lf
+# Ignore video folders
+/frontend/public/dogs/
+/frontend/public/cats/
