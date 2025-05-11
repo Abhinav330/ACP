@@ -76,11 +76,25 @@ export const authOptions: NextAuthOptions = {
         token.is_admin = user.is_admin;
         token.is_restricted = user.is_restricted;
         token.token = user.token;
+        token.lastActivity = Date.now();
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
+        // Check if session has expired due to inactivity
+        const lastActivity = token.lastActivity as number;
+        const now = Date.now();
+        const inactiveTime = now - lastActivity;
+        
+        if (inactiveTime > 20 * 60 * 1000) { // 20 minutes in milliseconds
+          // Return an expired session
+          return {
+            ...session,
+            expires: new Date(0).toISOString() // Set expiry to epoch time
+          };
+        }
+        
         session.user = {
           id: token.id as string,
           email: token.email as string,
@@ -97,7 +111,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 20 * 60, // 20 minutes in seconds
   },
   pages: {
     signIn: '/login',

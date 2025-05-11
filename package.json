@@ -5,6 +5,7 @@
     "tailwindcss": "^4.1.6"
   },
   "dependencies": {
+    "github-contribution-graph": "^2.0.2",
     "react-activity-calendar": "^2.7.11"
   }
 }

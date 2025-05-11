@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Viewport } from 'next';
 import { Providers } from './providers';
 import LayoutWrapper from './components/LayoutWrapper';
+import ClientLayout from './components/ClientLayout';
 
 export const viewport: Viewport = {
   themeColor: '#000000',
@@ -42,7 +43,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <LayoutWrapper>{children}</LayoutWrapper>
+          <ClientLayout>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </ClientLayout>
         </Providers>
       </body>
     </html>

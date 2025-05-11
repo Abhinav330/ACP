@@ -61,7 +61,7 @@ questions_collection = db['Q_bank']
 submissions_collection = db['submissions']
 user_progress_collection = db['user_progress']
 profile_collection = db['User_info']
-    
+
 # Initialize profile collection
 # profile_collection = db['profiles']
 
@@ -422,6 +422,42 @@ async def signup(request: Request, user: UserSignup):
         # Insert into database
         result = await candidate_collection.insert_one(user_doc)
         user_doc["_id"] = result.inserted_id
+
+        # Create initial profile in User_info
+        profile_data = {
+            "user_id": str(user_doc["_id"]),
+            "first_name": user_doc.get("firstName", ""),
+            "last_name": user_doc.get("lastName", ""),
+            "username": f"{user_doc.get('firstName', '')} {user_doc.get('lastName', '')}".strip(),
+            "email": user_doc.get("email"),
+            "profile_picture": user_doc.get("profile_picture", ""),
+            "bio": user_doc.get("bio", "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters."),
+            "phone": user_doc.get("phone"),
+            "company": user_doc.get("company"),
+            "social_links": {
+                "github": "",
+                "linkedin": "",
+                "portfolio": "",
+                "company": user_doc.get("company", "")
+            },
+            "visibility_settings": {
+                "github": True,
+                "linkedin": True,
+                "portfolio": True,
+                "company": True,
+                "email": False,
+                "phone": False
+            },
+            "achievements": [],
+            "badges": [],
+            "preferred_languages": [],
+            "created_at": user_doc.get("created_at", datetime.utcnow()),
+            "updated_at": datetime.utcnow(),
+            "total_score": 0,
+            "total_questions_solved": 0,
+            "contribution_data": []
+        }
+        await profile_collection.insert_one(profile_data)
 
         # Send OTP email
         try:
@@ -986,19 +1022,19 @@ async def execute_code(execution_request: CodeExecutionRequest, authorization: s
                         {"_id": user["_id"]},
                         {"$set": {"total_score": new_score}}
                     )
-                    # Send challenge completed email
-                    try:
-                        email_sent = await email_service.send_challenge_completed_email(
-                            to_email=token_data["email"],
-                            name=user.get("firstName") or user.get("lastName"),
+                # Send challenge completed email
+                try:
+                    email_sent = await email_service.send_challenge_completed_email(
+                        to_email=token_data["email"],
+                        name=user.get("firstName") or user.get("lastName"),
                             challenge_title=question.get("title", "Unknown Challenge"),
                             points=points_earned,
-                            total_score=new_score
-                        )
-                        if not email_sent:
-                            print(f"Failed to send challenge completion email to {token_data['email']}")
-                    except Exception as e:
-                        print(f"Error sending challenge completion email: {str(e)}")
+                        total_score=new_score
+                    )
+                    if not email_sent:
+                        print(f"Failed to send challenge completion email to {token_data['email']}")
+                except Exception as e:
+                    print(f"Error sending challenge completion email: {str(e)}")
 
                 return {
                     "status": "success",
@@ -1879,7 +1915,7 @@ async def update_user_profile_stats(user_id: str):
         "preferred_languages": [],
         "created_at": user.get("created_at", datetime.utcnow()),
         "updated_at": datetime.utcnow(),
-        "total_score": total_score,
+                    "total_score": total_score,
         "total_questions_solved": total_questions_solved,
         "contribution_data": contribution_data
     }

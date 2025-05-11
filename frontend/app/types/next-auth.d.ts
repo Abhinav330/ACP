@@ -11,6 +11,7 @@ declare module 'next-auth' {
       is_admin?: boolean;
       is_restricted?: boolean;
     }
+    lastActivity?: number;
   }
 
   interface User {

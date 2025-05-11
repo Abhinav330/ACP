@@ -17,6 +17,7 @@
     "@uiw/react-md-editor": "^4.0.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "github-contribution-graph": "^2.0.2",
     "lucide-react": "^0.501.0",
     "markdown-it": "^14.1.0",
     "monaco-editor": "^0.52.2",

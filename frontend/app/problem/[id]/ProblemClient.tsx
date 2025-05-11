@@ -636,8 +636,8 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
             ) : executionError ? (
               <div className={styles.errorSmall}>{executionError}</div>
             ) : (
-              <TestResults
-                results={executionResults || []}
+              <TestResults 
+                results={executionResults || []} 
                 isSubmission={isSubmission}
                 score={executionResults ? Math.round(executionResults.filter(r => r.passed).length * (question?.points || 0) / executionResults.length) : 0}
                 totalPoints={question?.points}
