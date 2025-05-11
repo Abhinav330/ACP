@@ -32,7 +32,7 @@ function VerifyOTPContent() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/verify-otp', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

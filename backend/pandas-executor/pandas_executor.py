@@ -69,53 +69,53 @@ def execute_function(code: str, function_name: str, test_input: str) -> tuple[tu
         # Set up timeout handler
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(EXECUTION_TIMEOUT)
-        
+
         # Convert input string to dictionary and create DataFrame
         test_input = test_input.replace('nan', 'float("nan")')
         input_dict = eval(test_input, {'float': float, 'nan': float('nan')})
         df = pd.DataFrame(input_dict)
-        
-    # Create a namespace for execution
-    namespace = {
-        'pd': pd,
-        'np': np,
+
+        # Create a namespace for execution
+        namespace = {
+            'pd': pd,
+            'np': np,
             'df': df
-    }
-    
-    # Execute the function definition
+        }
+
+        # Execute the function definition
         exec(code, namespace)
-    
-    # Capture the output
-    output_buffer = io.StringIO()
+
+        # Capture the output
+        output_buffer = io.StringIO()
         with redirect_stdout(output_buffer):
             try:
                 # Check memory before execution
                 check_memory_usage()
-                
-            # Call the function with the input DataFrame
+
+                # Call the function with the input DataFrame
                 result = namespace[function_name](df)
-                
+
                 # Check memory after execution
                 check_memory_usage()
-                
+
                 # Convert result to comparable format
                 result_type, formatted_result = format_result_for_comparison(result)
-                
+
                 # Disable alarm
                 signal.alarm(0)
-                
+
                 return (result_type, formatted_result), None, time.time() - start_time
-                
-        except TimeoutError:
-            signal.alarm(0)  # Disable alarm
-            return None, f"Execution time limit of {EXECUTION_TIMEOUT} seconds reached", time.time() - start_time
-        except MemoryError as e:
-            signal.alarm(0)  # Disable alarm
-            return None, str(e), time.time() - start_time
-        except Exception as e:
-            signal.alarm(0)  # Disable alarm
-            return None, f'Error executing function: {str(e)}', time.time() - start_time
-            
+
+            except TimeoutError:
+                signal.alarm(0)  # Disable alarm
+                return None, f"Execution time limit of {EXECUTION_TIMEOUT} seconds reached", time.time() - start_time
+            except MemoryError as e:
+                signal.alarm(0)  # Disable alarm
+                return None, str(e), time.time() - start_time
+            except Exception as e:
+                signal.alarm(0)  # Disable alarm
+                return None, f'Error executing function: {str(e)}', time.time() - start_time
+
     except Exception as e:
         signal.alarm(0)  # Disable alarm
         return None, f'Error preparing input DataFrame: {str(e)}', time.time() - start_time

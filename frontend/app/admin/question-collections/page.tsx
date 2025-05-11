@@ -152,7 +152,7 @@ const QuestionCollections = () => {
       }
       const user = JSON.parse(userStr);
 
-      const response = await fetch('http://localhost:8000/api/question-collections', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/question-collections`, {
         headers: {
           'Content-Type': 'application/json',
           'email': user.email
@@ -176,7 +176,7 @@ const QuestionCollections = () => {
       }
       const user = JSON.parse(userStr);
 
-      const response = await fetch('http://localhost:8000/api/questions', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/questions`, {
         headers: {
           'Content-Type': 'application/json',
           'email': user.email
@@ -208,7 +208,7 @@ const QuestionCollections = () => {
       }
       const user = JSON.parse(userStr);
 
-      const response = await fetch('http://localhost:8000/api/question-collections', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/question-collections`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ const QuestionCollections = () => {
       }
       const user = JSON.parse(userStr);
 
-      const response = await fetch(`http://localhost:8000/api/question-collections/${selectedCollection._id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/question-collections/${selectedCollection._id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -276,7 +276,7 @@ const QuestionCollections = () => {
       }
       const user = JSON.parse(userStr);
 
-      const response = await fetch(`http://localhost:8000/api/question-collections/${collectionId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/question-collections/${collectionId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

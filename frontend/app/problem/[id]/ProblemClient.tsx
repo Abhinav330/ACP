@@ -182,6 +182,10 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [questionPanelWidth, setQuestionPanelWidth] = useState(50);
   const splitLayoutRef = useRef<HTMLDivElement>(null);
+  const resultContainerRef = useRef<HTMLDivElement>(null);
+  const [resultHeight, setResultHeight] = useState<number>(0);
+  const editorPanelRef = useRef<HTMLDivElement>(null);
+  const [editorWidth, setEditorWidth] = useState<number | undefined>(undefined);
 
   // Available themes in Monaco Editor
   const themes = [
@@ -197,6 +201,13 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
     javascript: 'JavaScript',
     java: 'Java',
     cpp: 'C++',
+  };
+
+  // Mapping from category to module id and display name
+  const moduleMap: Record<string, { id: string; name: string }> = {
+    pandas: { id: 'pandas', name: 'Pandas' },
+    sklearn: { id: 'sklearn', name: 'Sklearn' },
+    ai: { id: 'ai', name: 'AI' },
   };
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -383,6 +394,21 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
     return `${backendUrl}${apiPath}/images${cleanUrl}`;
   };
 
+  useEffect(() => {
+    function updateResultHeight() {
+      if (resultContainerRef.current) {
+        setResultHeight(resultContainerRef.current.offsetHeight);
+      }
+    }
+    updateResultHeight();
+    // Observe DOM changes in the result area
+    const observer = new MutationObserver(updateResultHeight);
+    if (resultContainerRef.current) {
+      observer.observe(resultContainerRef.current, { childList: true, subtree: true });
+    }
+    return () => observer.disconnect();
+  }, [isExecuting, executionError, executionResults, isSubmission]);
+
   // Show loading state while checking authentication
   if (status === 'loading') {
     return (
@@ -398,6 +424,15 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
 
   return (
     <div className={styles.container} ref={splitLayoutRef}>
+      {question.category && question.category.length > 0 && moduleMap[question.category[0].toLowerCase()] && (
+        <a
+          href={`/problems/${moduleMap[question.category[0].toLowerCase()].id}`}
+          className={styles.backButton}
+          style={{ marginBottom: '1.5rem', display: 'inline-block' }}
+        >
+          &larr; Back to {moduleMap[question.category[0].toLowerCase()].name}
+        </a>
+      )}
       {error && (
         <div className={styles.error}>
           {error}
@@ -506,7 +541,7 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
             className={`${styles.splitHandle} ${isResizing ? styles.dragging : ''}`}
             onMouseDown={handleMouseDown}
           />
-        <div className={`${styles.editorPanel} ${isFullScreen ? styles.fullScreen : ''}`}>
+        <div className={`${styles.editorPanel} ${isFullScreen ? styles.fullScreen : ''} ${!isFullScreen ? styles.editorPanelPadding : ''}`}>
           <div className={styles.editorControls}>
             <div className={styles.controlsLeft}>
               <div className={styles.controlGroup}>
@@ -591,14 +626,18 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
             </button>
           </div>
 
-          <div className={styles.testResultsSection}>
+          <div
+            className={`${styles.testResultsSection} ${!isFullScreen ? styles.staticTestResultsSection : ''}`}
+            ref={resultContainerRef}
+            style={{ width: editorWidth ? editorWidth + 'px' : '100%', margin: '0 auto' }}
+          >
             {isExecuting ? (
-              <div className={styles.executing}>Running your code...</div>
+              <div className={styles.executingSmall}>Running your code...</div>
             ) : executionError ? (
-              <div className={styles.error}>{executionError}</div>
+              <div className={styles.errorSmall}>{executionError}</div>
             ) : (
-              <TestResults 
-                results={executionResults || []} 
+              <TestResults
+                results={executionResults || []}
                 isSubmission={isSubmission}
                 score={executionResults ? Math.round(executionResults.filter(r => r.passed).length * (question?.points || 0) / executionResults.length) : 0}
                 totalPoints={question?.points}
@@ -607,6 +646,7 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
           </div>
         </div>
       </div>
+      <div className={styles.afterProblemPadding} style={{ height: resultHeight + 200}}></div>
     </div>
   );
 };

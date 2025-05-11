@@ -43,7 +43,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://172.25.224.1:8000/api/users');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/users`);
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
@@ -59,7 +59,7 @@ const UserManagement = () => {
 
   const handleStatusChange = async (userId: string, field: 'is_admin' | 'is_restricted', value: boolean) => {
     try {
-      const response = await fetch(`http://172.25.224.1:8000/api/users/${userId}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/users/${userId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

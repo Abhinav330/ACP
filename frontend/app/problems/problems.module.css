@@ -355,4 +355,21 @@
   margin-top: 0.5rem;
   color: #666;
   font-size: 0.9rem;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(90deg, #16588e 0%, #1976d2 100%);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.backLink:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #16588e 100%);
+  box-shadow: 0 4px 16px rgba(22, 88, 142, 0.12);
 } 

@@ -4,9 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import styles from './Footer.module.css';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  sticky?: boolean;
+}
+
+const Footer: React.FC<FooterProps> = ({ sticky = false }) => {
   return (
-    <footer className={styles.footer}>
+    <footer className={`${styles.footer} ${sticky ? styles.stickyFooter : ''}`}>
       <div className={styles.footerContent}>
         <div className={styles.footerSection}>
           <h3 className={styles.footerTitle}>Algo Crafters</h3>

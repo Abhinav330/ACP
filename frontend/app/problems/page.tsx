@@ -134,6 +134,7 @@ const Problems = () => {
 
   return (
     <div className={styles.container} suppressHydrationWarning>
+      <Link href="/learning-hub" className={styles.backButton}>&larr; Back to Learning Hub</Link>
       <h1 className={styles.title}>AI Coding Challenges</h1>
       <p className={styles.subtitle}>
         Master Data Science and AI through hands-on practice

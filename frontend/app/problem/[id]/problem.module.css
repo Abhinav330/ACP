@@ -42,12 +42,14 @@
 .editorContainer {
   flex: 1;
   position: relative;
-  height: calc(100% - 100px); /* Subtract space for controls and actions */
+  height: 600px;
+  min-height: 500px;
 }
 
 .codeEditor {
   width: 100%;
   height: 100%;
+  min-height: 500px;
 }
 
 .editorControls {
@@ -712,4 +714,39 @@
   border-radius: 4px;
   font-weight: 600;
   font-size: 1rem;
+}
+
+.staticTestResultsSection {
+  width: 100%;
+  background-color: #fff;
+  border-top: 2px solid #e0e0e0;
+  padding: 2rem 1rem;
+  margin-top: 2rem;
+  margin-bottom: 20000000rem;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  z-index: 10;
+  min-height: 50px;
+}
+
+.stickyTestResults {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: #fff;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+}
+
+.editorPanelPadding {
+  padding-bottom: 120px;
+}
+
+.editorPanel.fullScreen.editorPanelPadding {
+  padding-bottom: 0;
+}
+
+.afterProblemPadding {
+  width: 100%;
+  height: 10rem;
+  content: '';
+  display: block;
 } 

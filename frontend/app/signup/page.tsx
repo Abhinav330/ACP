@@ -38,7 +38,7 @@ export default function Signup() {
     console.log('Request Data:', requestData);
 
     try {
-      const response = await fetch('http://localhost:8000/api/signup', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

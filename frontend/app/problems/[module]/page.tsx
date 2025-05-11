@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import styles from '../problems.module.css';
-import { apiRequest } from '@/utils/api';
+import { apiRequest } from '@/app/utils/api';
 
 interface Question {
   id: string;
@@ -215,7 +215,7 @@ const ModuleQuestions = ({ params }: { params: Promise<PageParams> }) => {
   const fetchQuestions = async (userEmail: string, userToken: string) => {
     try {
       setError('');
-      let url = 'http://localhost:8000/api/questions';
+      let url = `${process.env.NEXT_PUBLIC_BACK_END_URL}/api/questions`;
       if (category || difficulty) {
         const params = new URLSearchParams();
         if (category) params.append('category', category);
@@ -251,7 +251,7 @@ const ModuleQuestions = ({ params }: { params: Promise<PageParams> }) => {
   const fetchFilters = async (userEmail: string, userToken: string) => {
     try {
       setError('');
-      const response = await fetch('http://localhost:8000/api/questions/filters', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/questions/filters`, {
         headers: {
           'email': userEmail,
           'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ const ModuleQuestions = ({ params }: { params: Promise<PageParams> }) => {
         };
       }
       
-      const response = await fetch(`http://localhost:8000/api/user/module-progress/${userId}/${moduleId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/user/module-progress/${userId}/${moduleId}`, {
         headers: {
           'email': userEmail,
           'Content-Type': 'application/json',

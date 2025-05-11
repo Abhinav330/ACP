@@ -25,11 +25,6 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import asyncio
-from sqlalchemy.orm import Session
-import models
-import schemas
-import database
-from auth import get_current_user
 
 # Load environment variables from .env file
 load_dotenv()
@@ -66,7 +61,9 @@ questions_collection = db['Q_bank']
 submissions_collection = db['submissions']
 user_progress_collection = db['user_progress']
 profile_collection = db['User_info']
-
+    
+# Initialize profile collection
+# profile_collection = db['profiles']
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -132,7 +129,6 @@ app.mount("/api/v1/images", StaticFiles(directory=str(IMAGES_DIR)), name="images
 # Mount the uploads directory
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-
 # Pydantic models for request validation
 class UserSignup(BaseModel):
     email: EmailStr
@@ -144,20 +140,16 @@ class UserSignup(BaseModel):
     is_admin: Optional[bool] = False
     is_restricted: Optional[bool] = False
 
-
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-
 class PasswordResetRequest(BaseModel):
     email: str
-
 
 class PasswordReset(BaseModel):
     token: str
     new_password: str
-
 
 # Question models
 class TestCase(BaseModel):
@@ -167,7 +159,6 @@ class TestCase(BaseModel):
     order: int
     points: int = 0
 
-
 class Example(BaseModel):
     input: str
     output: str
@@ -176,16 +167,13 @@ class Example(BaseModel):
     inputImage: Optional[Dict[str, str]] = None
     outputImage: Optional[Dict[str, str]] = None
 
-
 class StarterCode(BaseModel):
     language: str
     code: str
 
-
 class ImageData(BaseModel):
     url: str
     caption: str
-
 
 class Question(BaseModel):
     title: str
@@ -203,18 +191,14 @@ class Question(BaseModel):
     Q_type: str = "pandas"  # Module type: pandas, sklearn, ai
     working_driver: str = ""  # Working code solution
 
-
 class QuestionCreate(Question):
     pass
-
 
 class QuestionUpdate(Question):
     pass
 
-
 class QuestionInDB(Question):
     id: str
-
 
 class CodeExecutionRequest(BaseModel):
     code: str
@@ -223,16 +207,13 @@ class CodeExecutionRequest(BaseModel):
     is_submission: bool = False
     docker_runner: str = "only_python"
 
-
 # Helper functions
 def hash_password(password: str) -> bytes:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode('utf-8'), salt)
 
-
 def verify_password(plain_password: str, hashed_password: bytes) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
-
 
 def serialize_question(question: dict) -> dict:
     """Serialize MongoDB question document to JSON-compatible format"""
@@ -240,14 +221,12 @@ def serialize_question(question: dict) -> dict:
     del question['_id']
     return question
 
-
 # Add after the MongoDB connection setup
 class RoleChecker:
-
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles
 
-    async def __call__(self, authorization: str=Header(None)) -> bool:
+    async def __call__(self, authorization: str = Header(None)) -> bool:
         if not authorization:
             raise HTTPException(
                 status_code=401,
@@ -278,11 +257,9 @@ class RoleChecker:
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-
 # Create role checker instances
 require_admin = RoleChecker(["admin"])  # Only admins
 require_user = RoleChecker(["user", "admin"])  # Both users and admins
-
 
 def generate_verification_token(email: str) -> str:
     """Generate a JWT token for email verification"""
@@ -293,8 +270,7 @@ def generate_verification_token(email: str) -> str:
         algorithm=JWT_ALGORITHM
     )
 
-
-async def verify_token(authorization: str=Header(None)) -> dict:
+async def verify_token(authorization: str = Header(None)) -> dict:
     """Verify JWT token and return payload"""
     if not authorization:
         raise HTTPException(
@@ -322,13 +298,11 @@ async def verify_token(authorization: str=Header(None)) -> dict:
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-
 def generate_otp() -> str:
     """Generate a random 4-digit OTP"""
     return ''.join([str(random.randint(0, 9)) for _ in range(4)])
 
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta]=None) -> str:
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create a JWT access token"""
     to_encode = data.copy()
     if expires_delta:
@@ -338,14 +312,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta]=None) -> 
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-
 # Authentication dependencies
-async def require_user(token: str=Depends(verify_token)) -> bool:
+async def require_user(token: str = Depends(verify_token)) -> bool:
     """Dependency for endpoints that require any authenticated user"""
     return True
 
-
-async def require_admin(token: str=Depends(verify_token)) -> bool:
+async def require_admin(token: str = Depends(verify_token)) -> bool:
     """Dependency for endpoints that require admin access"""
     if not token.get("is_admin"):
         raise HTTPException(
@@ -353,7 +325,6 @@ async def require_admin(token: str=Depends(verify_token)) -> bool:
             detail="Admin access required"
         )
     return True
-
 
 # Authentication endpoints
 @app.post("/api/login")
@@ -387,9 +358,7 @@ async def login(credentials: UserLogin, request: Request):
         access_token = create_access_token({
             "sub": str(user["_id"]),
             "email": user["email"],
-            "firstName": user.get("firstName", ""),
-            "lastName": user.get("lastName", ""),
-            "name": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+            "name": user.get("name", ""),
             "is_admin": user.get("is_admin", False),
             "is_restricted": user.get("is_restricted", False)
         })
@@ -400,9 +369,7 @@ async def login(credentials: UserLogin, request: Request):
             "user": {
                 "id": str(user["_id"]),
                 "email": user["email"],
-                "firstName": user.get("firstName", ""),
-                "lastName": user.get("lastName", ""),
-                "name": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+                "name": user.get("name", ""),
                 "is_admin": user.get("is_admin", False),
                 "is_restricted": user.get("is_restricted", False),
             }
@@ -413,7 +380,6 @@ async def login(credentials: UserLogin, request: Request):
     except Exception as e:
         print(f"Login error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 @app.post("/api/signup")
 @limiter.limit("3/minute")
@@ -466,7 +432,6 @@ async def signup(request: Request, user: UserSignup):
             )
         except Exception as e:
             print(f"Failed to send OTP email: {str(e)}")
-            # Delete user if email sending fails
             await candidate_collection.delete_one({"_id": result.inserted_id})
             raise HTTPException(
                 status_code=500,
@@ -483,7 +448,6 @@ async def signup(request: Request, user: UserSignup):
     except Exception as e:
         print(f"Signup error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 @app.post("/api/verify-email")
 async def verify_email(request: dict):
@@ -536,7 +500,6 @@ async def verify_email(request: dict):
     except Exception as e:
         print(f"Email verification error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 @app.post("/api/resend-otp")
 @limiter.limit("3/minute")
@@ -593,7 +556,6 @@ async def resend_otp(request: dict):
         print(f"Resend OTP error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 # Add a cleanup job to remove unverified users after 3 hours
 async def cleanup_unverified_users():
     """Periodically remove unverified users after 3 hours"""
@@ -612,7 +574,6 @@ async def cleanup_unverified_users():
         
         # Run every hour
         await asyncio.sleep(3600)
-
 
 @app.post("/api/verify-otp")
 async def verify_otp(request: dict):
@@ -651,7 +612,6 @@ async def verify_otp(request: dict):
         print(f"Error in verify_otp: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/api/questions", dependencies=[Depends(require_admin)])
 async def create_question(question: Question):
     try:
@@ -675,9 +635,8 @@ async def create_question(question: Question):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/questions", dependencies=[Depends(require_user)])
-async def get_questions(category: Optional[str]=None, difficulty: Optional[str]=None):
+async def get_questions(category: Optional[str] = None, difficulty: Optional[str] = None):
     try:
         # Log the request
         print(f"Fetching questions with filters - Category: {category}, Difficulty: {difficulty}")
@@ -717,7 +676,6 @@ async def get_questions(category: Optional[str]=None, difficulty: Optional[str]=
             detail="An unexpected error occurred while fetching questions"
         )
 
-
 @app.get("/api/questions/filters", dependencies=[Depends(require_user)])
 async def get_filters():
     try:
@@ -737,7 +695,6 @@ async def get_filters():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.put("/api/questions/{question_id}", dependencies=[Depends(require_admin)])
 async def update_question(question_id: str, question: Question):
@@ -803,7 +760,6 @@ async def update_question(question_id: str, question: Question):
         print(f"Error updating question: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.delete("/api/questions/{question_id}", dependencies=[Depends(require_admin)])
 async def delete_question(question_id: str):
     try:
@@ -814,7 +770,6 @@ async def delete_question(question_id: str):
             raise HTTPException(status_code=404, detail="Question not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/api/users", dependencies=[Depends(require_admin)])
 async def get_users():
@@ -836,7 +791,6 @@ async def get_users():
         return users
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.put("/api/users/{user_id}/status", dependencies=[Depends(require_admin)])
 async def update_user_status(user_id: str, status_update: dict):
@@ -875,7 +829,6 @@ async def update_user_status(user_id: str, status_update: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/questions/{question_id}", dependencies=[Depends(require_user)])
 async def get_question(question_id: str):
     try:
@@ -886,73 +839,195 @@ async def get_question(question_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/api/execute-code", dependencies=[Depends(require_user)])
-async def execute_code(execution_request: CodeExecutionRequest, authorization: str=Header(None)):
+async def execute_code(execution_request: CodeExecutionRequest, authorization: str = Header(None)):
     try:
         print(f"Executing code for question: {execution_request.question_id}")  # Debug log
         
-        # Verify token and get user data
+        # Get user from token
         token_data = await verify_token(authorization)
-        user = await candidate_collection.find_one({"email": token_data["email"]})
+        if not token_data:
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
         
+        # Get user from database
+        user = await candidate_collection.find_one({"email": token_data["email"]})
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        # Get question details
-        question = await questions_collection.find_one({"_id": ObjectId(execution_request.question_id)})
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        user_id = str(user["_id"])
+        print(f"User ID: {user_id}")  # Debug log
+        
+        # Get question test cases
+        question = await questions_collection.find_one({'_id': ObjectId(execution_request.question_id)})
         if not question:
             raise HTTPException(status_code=404, detail="Question not found")
 
-        # Execute code and get result
-        result = await execute_code_safely(
-            execution_request.code,
-            question.get("test_cases", [])
-        )
+        # Verify language is allowed for this question
+        if execution_request.language not in question.get('allowedLanguages', []):
+            raise HTTPException(status_code=400, detail="Language not allowed for this question")
 
-        # Update user progress
-        if result["all_tests_passed"]:
+        # Get the docker runner type from the question
+        docker_runner = question.get('docker_runner', 'only_python')
+
+        # Prepare test cases
+        test_cases = question.get('testCases', [])
+        if not test_cases:
+            raise HTTPException(status_code=400, detail="No test cases found for this question")
+
+        # Prepare input data for the executor
+        input_data = {
+            'code': execution_request.code,
+            'test_cases': test_cases,
+            'working_driver': question.get('working_driver', '')  # Include working code solution
+        }
+
+        # Choose the appropriate docker executor based on docker_runner
+        if docker_runner == "pandas":
+            executor_dir = Path(__file__).parent / 'pandas-executor'
+            docker_image = 'pandas-executor'
+        elif docker_runner == "only_python":
+            executor_dir = Path(__file__).parent / 'code-executor'
+            docker_image = 'code-executor'
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported docker runner: {docker_runner}")
+
+        if not executor_dir.exists():
+            raise HTTPException(status_code=500, detail=f"{docker_runner} executor not found")
+
+        try:
+            # Build the Docker image if it doesn't exist
+            build_process = subprocess.run(
+                ['docker', 'build', '-t', docker_image, str(executor_dir)],
+                capture_output=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            if build_process.returncode != 0:
+                raise HTTPException(status_code=500, detail=f"Failed to build {docker_image} Docker image")
+
+            # Convert input data to JSON string and encode to bytes
+            input_json = json.dumps(input_data)
+            input_bytes = input_json.encode('utf-8') + b'\n'
+
+            # Run the code in Docker container with volume mount for debug log
+            debug_log_dir = executor_dir / 'debug_logs'
+            debug_log_dir.mkdir(exist_ok=True)
+            debug_log_file = debug_log_dir / 'debug.log'
+            
+            # Clear previous debug log
+            debug_log_file.write_text('')
+            
+            process = subprocess.Popen(
+                ['docker', 'run', '--rm', '-i', '--network=none', '--memory=512m', '--cpus=1',
+                 '-v', f'{str(debug_log_file)}:/tmp/debug.log',
+                 docker_image],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=False
+            )
+
             try:
-                # Calculate new score
-                new_score = calculate_score(
-                    question.get("difficulty", "easy"),
-                    result.get("execution_time", 0)
-                )
+                # Send input and get output with proper encoding
+                stdout, stderr = process.communicate(input=input_bytes, timeout=25)
                 
-                # Update user progress
-                await update_user_progress(
-                    user["_id"],
-                    execution_request.question_id,
-                    new_score
-                )
-                
-                # Send challenge completed email
-                try:
-                    email_sent = await email_service.send_challenge_completed_email(
-                        to_email=token_data["email"],
-                        name=user.get("firstName") or user.get("lastName"),
-                        question_title=question.get("title"),
-                        total_score=new_score
-                    )
-                    if not email_sent:
-                        print(f"Failed to send challenge completion email to {token_data['email']}")
-                except Exception as e:
-                    print(f"Error sending challenge completion email: {str(e)}")
-            except Exception as e:
-                print(f"Error updating user progress: {str(e)}")
-                # Don't raise exception here as code execution was successful
+                # Check return code
+                if process.returncode != 0:
+                    error_message = stderr.decode('utf-8', errors='replace')
+                    raise HTTPException(status_code=500, detail=f"Code execution failed: {error_message}")
 
-        return result
+                # Parse output with proper decoding
+                output_str = stdout.decode('utf-8', errors='replace').strip()
+                
+                # Read debug log
+                debug_output = debug_log_file.read_text() if debug_log_file.exists() else ""
+                
+                try:
+                    results = json.loads(output_str)
+                except json.JSONDecodeError:
+                    raise HTTPException(status_code=500, detail="Failed to parse execution results")
+
+                # Calculate score based on test cases passed
+                total_test_cases = len(test_cases)
+                test_cases_passed = sum(1 for result in results['results'] if result.get('passed', False))
+                score = int((test_cases_passed / total_test_cases) * question.get('points', 0))
+
+                # If this is a submission, record it
+                if execution_request.is_submission:
+                    print(f"Recording submission with score: {score}")  # Debug log
+                    submission = Submission(
+                        candidate_id=user_id,
+                        question_id=execution_request.question_id,
+                        code_solve=execution_request.code,
+                        score=score,
+                        status="success" if test_cases_passed > 0 else "failed",
+                        test_cases_passed=test_cases_passed,
+                        total_test_cases=total_test_cases
+                    )
+                    await submit_solution(submission)
+
+                # Filter results based on submission type
+                if not execution_request.is_submission:
+                    visible_results = [
+                        result for i, result in enumerate(results['results'])
+                        if not test_cases[i].get('is_hidden', False)
+                    ]
+                else:
+                    visible_results = results['results']
+
+                # If the submission is successful and it's a final submission
+                if execution_request.is_submission and test_cases_passed == total_test_cases:
+                    # Calculate points earned
+                    points_earned = question.get("points", 0)
+                    # Update user's total score
+                    new_score = user.get("total_score", 0) + points_earned
+                    await candidate_collection.update_one(
+                        {"_id": user["_id"]},
+                        {"$set": {"total_score": new_score}}
+                    )
+                    # Send challenge completed email
+                    try:
+                        email_sent = await email_service.send_challenge_completed_email(
+                            to_email=token_data["email"],
+                            name=user.get("firstName") or user.get("lastName"),
+                            challenge_title=question.get("title", "Unknown Challenge"),
+                            points=points_earned,
+                            total_score=new_score
+                        )
+                        if not email_sent:
+                            print(f"Failed to send challenge completion email to {token_data['email']}")
+                    except Exception as e:
+                        print(f"Error sending challenge completion email: {str(e)}")
+
+                return {
+                    "status": "success",
+                    "results": visible_results,
+                    "score": score,
+                    "test_cases_passed": test_cases_passed,
+                    "total_test_cases": total_test_cases,
+                    "is_submission": execution_request.is_submission,
+                    "debug_output": debug_output
+                }
+
+            except subprocess.TimeoutExpired:
+                process.kill()
+                raise HTTPException(status_code=408, detail="Code execution timed out")
+
+        except subprocess.CalledProcessError as e:
+            error_message = e.stderr.decode('utf-8', errors='replace') if e.stderr else str(e)
+            raise HTTPException(status_code=500, detail=f"Docker execution failed: {error_message}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Code execution error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to execute code")
-
+        print(f"Error in execute_code: {str(e)}")  # Debug log
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload-image", dependencies=[Depends(require_admin)])
-async def upload_image(file: UploadFile=File(...)):
+async def upload_image(file: UploadFile = File(...)):
     try:
         # Create a unique filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -974,13 +1049,11 @@ async def upload_image(file: UploadFile=File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # Add these models after other models
 class QuestionCollection(BaseModel):
     name: str
     description: str
     questions: List[str] = []
-
 
 class QuestionCollectionResponse(BaseModel):
     id: str
@@ -991,7 +1064,6 @@ class QuestionCollectionResponse(BaseModel):
     updatedAt: str
 
 # Add these routes after other routes
-
 
 @app.get("/api/question-collections", dependencies=[Depends(require_user)])
 async def get_question_collections():
@@ -1015,7 +1087,6 @@ async def get_question_collections():
         })
     return collections
 
-
 @app.post("/api/question-collections", dependencies=[Depends(require_admin)])
 async def create_question_collection(collection: QuestionCollection):
     now = datetime.utcnow().isoformat()
@@ -1025,7 +1096,6 @@ async def create_question_collection(collection: QuestionCollection):
     
     result = await db.Q_collections.insert_one(collection_dict)
     return {"id": str(result.inserted_id), "status": "success"}
-
 
 @app.put("/api/question-collections/{collection_id}", dependencies=[Depends(require_admin)])
 async def update_question_collection(collection_id: str, collection: QuestionCollection):
@@ -1042,14 +1112,12 @@ async def update_question_collection(collection_id: str, collection: QuestionCol
         raise HTTPException(status_code=404, detail="Collection not found")
     return {"status": "success"}
 
-
 @app.delete("/api/question-collections/{collection_id}", dependencies=[Depends(require_admin)])
 async def delete_question_collection(collection_id: str):
     result = await db.Q_collections.delete_one({"_id": ObjectId(collection_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Collection not found")
     return {"status": "success"}
-
 
 @app.post("/api/question-collections/{collection_id}/questions", dependencies=[Depends(require_admin)])
 async def add_question_to_collection(collection_id: str, question_data: dict):
@@ -1071,7 +1139,6 @@ async def add_question_to_collection(collection_id: str, question_data: dict):
         raise HTTPException(status_code=404, detail="Collection not found")
     return {"status": "success"}
 
-
 @app.delete("/api/question-collections/{collection_id}/questions/{question_id}", dependencies=[Depends(require_admin)])
 async def remove_question_from_collection(collection_id: str, question_id: str):
     result = await db.Q_collections.update_one(
@@ -1086,9 +1153,8 @@ async def remove_question_from_collection(collection_id: str, question_id: str):
         raise HTTPException(status_code=404, detail="Collection or question not found")
     return {"status": "success"}
 
-
 @app.get("/api/user/progress/{candidate_id}", dependencies=[Depends(require_user)])
-async def get_user_progress(candidate_id: str, authorization: str=Header(None)):
+async def get_user_progress(candidate_id: str, authorization: str = Header(None)):
     try:
         # Verify token and get user data
         token_data = await verify_token(authorization)
@@ -1138,9 +1204,8 @@ async def get_user_progress(candidate_id: str, authorization: str=Header(None)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/submissions/{candidate_id}/{question_id}", dependencies=[Depends(require_user)])
-async def get_submissions(candidate_id: str, question_id: str, authorization: str=Header(None)):
+async def get_submissions(candidate_id: str, question_id: str, authorization: str = Header(None)):
     try:
         # Verify token and get user data
         token_data = await verify_token(authorization)
@@ -1169,9 +1234,8 @@ async def get_submissions(candidate_id: str, question_id: str, authorization: st
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/leaderboard", dependencies=[Depends(require_user)])
-async def get_leaderboard(page: int=1, limit: int=10):
+async def get_leaderboard(page: int = 1, limit: int = 10):
     try:
         # Calculate skip value for pagination
         skip = (page - 1) * limit
@@ -1213,9 +1277,8 @@ async def get_leaderboard(page: int=1, limit: int=10):
         print(f"Error in get_leaderboard: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/user/module-progress/{user_id}/{module_id}", dependencies=[Depends(require_user)])
-async def get_module_progress(user_id: str, module_id: str, authorization: str=Header(None)):
+async def get_module_progress(user_id: str, module_id: str, authorization: str = Header(None)):
     try:
         # Verify token and get user data
         token_data = await verify_token(authorization)
@@ -1324,9 +1387,8 @@ async def get_module_progress(user_id: str, module_id: str, authorization: str=H
         print(f"Error in get_module_progress: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/user-performance/{user_id}", dependencies=[Depends(require_user)])
-async def get_user_performance(user_id: str, authorization: str=Header(None)):
+async def get_user_performance(user_id: str, authorization: str = Header(None)):
     try:
         # Verify token and get user data
         token_data = await verify_token(authorization)
@@ -1382,7 +1444,6 @@ async def get_user_performance(user_id: str, authorization: str=Header(None)):
     except Exception as e:
         print(f"Error in get_user_performance: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/api/forgot-password")
 @limiter.limit("3/minute")
@@ -1449,7 +1510,6 @@ async def forgot_password(request: PasswordResetRequest):
         print(f"Forgot password error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @app.post("/api/reset-password")
 async def reset_password(request: PasswordReset):
     """Reset user's password using reset token"""
@@ -1505,7 +1565,6 @@ async def reset_password(request: PasswordReset):
         print(f"Reset password error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @app.get("/api/health")
 async def health_check():
     """Check the health status of the API and its dependencies"""
@@ -1558,7 +1617,6 @@ async def health_check():
             "error": str(e),
             "message": "System is unhealthy"
         }
-
 
 async def submit_solution(submission: Submission) -> dict:
     """Record a solution submission and update user progress"""
@@ -1669,190 +1727,180 @@ async def submit_solution(submission: Submission) -> dict:
         print(f"Error in submit_solution: {str(e)}")  # Debug log
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/profiles/{user_id}", dependencies=[Depends(require_user)])
-async def get_public_profile(user_id: int, db: Session=Depends(database.get_db)):
-    profile = db.query(models.User_info).filter(models.User_info.id == user_id).first()
+async def get_profile(user_id: str):
+    profile = await profile_collection.find_one({"user_id": user_id})
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+    if "_id" in profile:
+        profile["_id"] = str(profile["_id"])
     return profile
 
-
-@app.get("/api/private-profile", response_model=schemas.PrivateProfile)
-async def get_private_profile(
-    current_user: models.User=Depends(get_current_user),
-    db: Session=Depends(database.get_db)
-):
-    profile = db.query(models.User_info).filter(models.User_info.id == current_user.id).first()
-    if not profile:
-        # Create profile if it doesn't exist
-        profile = models.User_info(
-            id=current_user.id,
-            user_name=current_user.email.split('@')[0],
-            bio="Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters."
-        )
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
-    return profile
-
-
-@app.put("/api/private-profile", response_model=schemas.PrivateProfile)
+@app.put("/api/private-profile", dependencies=[Depends(require_user)])
 async def update_private_profile(
-    profile_update: schemas.ProfileUpdate,
-    current_user: models.User=Depends(get_current_user),
-    db: Session=Depends(database.get_db)
+    profile_update: dict = Body(...),
+    authorization: str = Header(None)
 ):
-    profile = db.query(models.User_info).filter(models.User_info.id == current_user.id).first()
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
-    for field, value in profile_update.dict(exclude_unset=True).items():
-        setattr(profile, field, value)
-
-    db.commit()
-    db.refresh(profile)
-    return profile
-
-
-@app.post("/api/upload-profile-picture")
-async def upload_profile_picture(
-    file: UploadFile=File(...),
-    current_user: models.User=Depends(get_current_user),
-    db: Session=Depends(database.get_db)
-):
-    # Create uploads directory if it doesn't exist
-    upload_dir = "uploads/profile_pictures"
-    os.makedirs(upload_dir, exist_ok=True)
-
-    # Generate unique filename
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{file_extension}"
-    file_path = os.path.join(upload_dir, filename)
-
-    # Save file
-    with open(file_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
-
-    # Update profile with new picture URL
-    profile = db.query(models.User_info).filter(models.User_info.id == current_user.id).first()
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
-    profile.profile_picture = f"/uploads/profile_pictures/{filename}"
-    db.commit()
-
-    return {"profile_picture_url": profile.profile_picture}
-
-
-@app.post("/api/change-password")
-async def change_password(
-    password_change: schemas.PasswordChange,
-    current_user: models.User=Depends(get_current_user),
-    db: Session=Depends(database.get_db)
-):
-    # Verify OTP
-    if not verify_otp(current_user.email, password_change.otp):
-        raise HTTPException(status_code=400, detail="Invalid OTP")
-
-    # Update password
-    current_user.password = get_password_hash(password_change.new_password)
-    db.commit()
-
-    return {"message": "Password updated successfully"}
-
-
-# Helper functions
-def verify_otp(email: str, otp: str) -> bool:
-    # Implement OTP verification logic here
-    # This should match your existing OTP verification system
-    pass
-
-
-def get_password_hash(password: str) -> str:
-    # Implement password hashing logic here
-    # This should match your existing password hashing system
-    pass
-
-
-async def execute_code_safely(code: str, test_cases: list) -> dict:
-    """Execute code safely in a Docker container and return results"""
+    """
+    Update the user's profile and instantly aggregate stats from user_progress and submissions.
+    """
     try:
-        # Initialize result structure
-        result = {
-            "all_tests_passed": False,
-            "execution_time": 0,
-            "test_results": []
+        # Get user from token
+        token_data = await verify_token(authorization)
+        user_id = str(token_data["sub"])
+        user = await candidate_collection.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Get stats from user_progress
+        progress = await user_progress_collection.find_one({"user_id": ObjectId(user_id)})
+        total_score = progress.get("total_score", 0) if progress else 0
+        question_ids = progress.get("question_ids", []) if progress else []
+        total_questions_solved = len(question_ids)
+
+        # Get contribution data from submissions (last 365 days)
+        one_year_ago = datetime.utcnow() - timedelta(days=365)
+        pipeline = [
+            {"$match": {
+                "candidate_id": ObjectId(user_id),
+                "status": "success",
+                "submitted_at": {"$gte": one_year_ago}
+            }},
+            {"$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$submitted_at"}},
+                "count": {"$sum": 1}
+            }},
+            {"$project": {
+                "date": "$_id",
+                "count": 1,
+                "_id": 0
+            }}
+        ]
+        contribution_data = await submissions_collection.aggregate(pipeline).to_list(length=None)
+
+        # Prepare profile document
+        profile_data = {
+            "user_id": user_id,
+            "username": profile_update.get("user_name") or f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+            "email": user.get("email"),
+            **({"profile_picture": profile_update["profile_picture"]} if profile_update.get("profile_picture") else {}),
+            "bio": profile_update.get("bio") or user.get("bio") or "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+            "phone": user.get("phone"),
+            "company": user.get("company"),
+            "social_links": profile_update.get("social_links", {
+                "github": "",
+                "linkedin": "",
+                "portfolio": "",
+                "company": user.get("company", "")
+            }),
+            "visibility_settings": profile_update.get("visibility", {
+                "github": True,
+                "linkedin": True,
+                "portfolio": True,
+                "company": True,
+                "email": False,
+                "phone": False
+            }),
+            "achievements": profile_update.get("achievements") if profile_update.get("achievements") is not None else [],
+            "badges": profile_update.get("badges") if profile_update.get("badges") is not None else [],
+            "preferred_languages": profile_update.get("preferred_languages", []),
+            "created_at": user.get("created_at", datetime.utcnow()),
+            "updated_at": datetime.utcnow(),
+            "total_score": total_score,
+            "total_questions_solved": total_questions_solved,
+            "contribution_data": contribution_data
         }
-        
-        # Execute code in Docker container
-        # Implementation details here...
-        
-        return result
-    except Exception as e:
-        print(f"Error executing code: {str(e)}")
-        raise HTTPException(status_code=500, detail="Code execution failed")
 
-
-def calculate_score(difficulty: str, execution_time: float) -> int:
-    """Calculate score based on difficulty and execution time"""
-    base_scores = {
-        "easy": 100,
-        "medium": 200,
-        "hard": 300
-    }
-    
-    base_score = base_scores.get(difficulty.lower(), 100)
-    time_bonus = max(0, 50 - int(execution_time * 10))  # Bonus for fast execution
-    
-    return base_score + time_bonus
-
-
-async def update_user_progress(user_id: str, question_id: str, score: int):
-    """Update user progress after successful submission"""
-    try:
-        # Update user progress in database
-        await user_progress_collection.update_one(
-            {"user_id": ObjectId(user_id)},
-            {
-                "$addToSet": {"question_ids": ObjectId(question_id)},
-                "$inc": {"total_score": score},
-                "$set": {"last_submission": datetime.utcnow()}
-            },
+        # Update or insert profile
+        await profile_collection.update_one(
+            {"user_id": user_id},
+            {"$set": profile_data},
             upsert=True
         )
+        # Return updated profile
+        updated_profile = await profile_collection.find_one({"user_id": user_id})
+        if updated_profile and "_id" in updated_profile:
+            updated_profile["_id"] = str(updated_profile["_id"])
+        return updated_profile
     except Exception as e:
-        print(f"Error updating user progress: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to update user progress")
-
+        raise HTTPException(status_code=500, detail=str(e))
 
 async def update_user_profile_stats(user_id: str):
-    """Update user profile statistics"""
-    try:
-        # Get user's submissions
-        cursor = submissions_collection.find({"candidate_id": ObjectId(user_id)})
-        submissions = await cursor.to_list(length=None)
-        
-        # Calculate statistics
-        total_solved = len({sub["question_id"] for sub in submissions if sub["status"] == "success"})
-        total_score = sum(sub["score"] for sub in submissions if sub["status"] == "success")
-        
-        # Update profile
-        await profile_collection.update_one(
-            {"_id": ObjectId(user_id)},
-            {
-                "$set": {
-                    "total_questions_solved": total_solved,
-                    "total_score": total_score,
-                    "updated_at": datetime.utcnow()
-                }
-            }
-        )
-    except Exception as e:
-        print(f"Error updating profile stats: {str(e)}")
-        # Don't raise exception as this is a non-critical operation
+    """Update the User_info profile for the user with latest stats and contributions."""
+    user = await candidate_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        return
+    progress = await user_progress_collection.find_one({"user_id": ObjectId(user_id)})
+    total_score = progress.get("total_score", 0) if progress else 0
+    question_ids = progress.get("question_ids", []) if progress else []
+    total_questions_solved = len(question_ids)
+    one_year_ago = datetime.utcnow() - timedelta(days=365)
+    pipeline = [
+        {"$match": {
+            "candidate_id": ObjectId(user_id),
+            "status": "success",
+            "submitted_at": {"$gte": one_year_ago}
+        }},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$submitted_at"}},
+            "count": {"$sum": 1}
+        }},
+        {"$project": {
+            "date": "$_id",
+            "count": 1,
+            "_id": 0
+        }}
+    ]
+    contribution_data = await submissions_collection.aggregate(pipeline).to_list(length=None)
+    profile_data = {
+        "user_id": user_id,
+        "username": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+        "email": user.get("email"),
+        **({"profile_picture": user["profile_picture"]} if user.get("profile_picture") else {}),
+        "bio": user.get("bio") or "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
+        "phone": user.get("phone"),
+        "company": user.get("company"),
+        "social_links": {
+            "github": "",
+            "linkedin": "",
+            "portfolio": "",
+            "company": user.get("company", "")
+        },
+        "visibility_settings": {
+            "github": True,
+            "linkedin": True,
+            "portfolio": True,
+            "company": True,
+            "email": False,
+            "phone": False
+        },
+        "achievements": user.get("achievements") if user.get("achievements") is not None else [],
+        "badges": user.get("badges") if user.get("badges") is not None else [],
+        "preferred_languages": [],
+        "created_at": user.get("created_at", datetime.utcnow()),
+        "updated_at": datetime.utcnow(),
+        "total_score": total_score,
+        "total_questions_solved": total_questions_solved,
+        "contribution_data": contribution_data
+    }
+    await profile_collection.update_one(
+        {"user_id": user_id},
+        {"$set": profile_data},
+        upsert=True
+    )
 
+@app.get("/api/private-profile", dependencies=[Depends(require_user)])
+async def get_private_profile(authorization: str = Header(None)):
+    token_data = await verify_token(authorization)
+    user_id = str(token_data["sub"])
+    profile = await profile_collection.find_one({"user_id": user_id})
+    if not profile:
+        # Auto-create default profile if missing
+        await update_user_profile_stats(user_id)
+        profile = await profile_collection.find_one({"user_id": user_id})
+    if profile and "_id" in profile:
+        profile["_id"] = str(profile["_id"])
+    return profile
 
 # Uvicorn configuration
 if __name__ == "__main__":
@@ -1861,7 +1909,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,  # Enable auto-reload on code changes
-        workers=1,  # Number of worker processes
+        workers=1,    # Number of worker processes
         log_level="info",
         access_log=True,
     ) 
