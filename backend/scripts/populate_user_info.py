@@ -104,6 +104,8 @@ async def migrate_user_profiles():
                 # Prepare profile document
                 profile_data = {
                     "user_id": user_id,
+                    "first_name": user.get("firstName", ""),
+                    "last_name": user.get("lastName", ""),
                     "username": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
                     "email": user.get("email"),
                     **({"profile_picture": user["profile_picture"]} if user.get("profile_picture") else {}),
