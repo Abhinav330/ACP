@@ -5,6 +5,10 @@ const nextConfig = {
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   // Configure server components
   serverExternalPackages: [],
+  // Configure image domains
+  images: {
+    domains: ['localhost'],
+  },
   // Disable webpack 5 persistent caching in development
   webpack: (config, { dev, isServer }) => {
     if (dev) {

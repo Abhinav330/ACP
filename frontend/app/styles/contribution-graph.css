@@ -11,3 +11,6 @@
     cursor: pointer;
     position: absolute;
   }
+#contribution-graph .github-contribution-graph-weekdays {
+  display: none !important;
+}

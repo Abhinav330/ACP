@@ -10,6 +10,7 @@ declare module 'next-auth' {
       isLoggedIn?: boolean;
       is_admin?: boolean;
       is_restricted?: boolean;
+      profile_picture?: string;
     }
     lastActivity?: number;
   }
@@ -22,5 +23,6 @@ declare module 'next-auth' {
     isLoggedIn: boolean;
     is_admin: boolean;
     is_restricted: boolean;
+    profile_picture?: string;
   }
 } 

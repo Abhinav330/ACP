@@ -7,6 +7,17 @@ import { useSession, signOut } from 'next-auth/react';
 import styles from './Header.module.css';
 import Image from 'next/image';
 
+interface User {
+  id?: string;
+  email?: string;
+  name?: string;
+  token?: string;
+  isLoggedIn?: boolean;
+  is_admin?: boolean;
+  is_restricted?: boolean;
+  profile_picture?: string;
+}
+
 const Header: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -31,7 +42,7 @@ const Header: React.FC = () => {
     return <div className={styles.header} style={{ height: '90px' }} />; // Return empty header with same height
   }
 
-  const user = session?.user;
+  const user = session?.user as User | undefined;
 
   return (
     <header className={styles.header}>
@@ -78,11 +89,10 @@ const Header: React.FC = () => {
         {user ? (
           <div className={styles.userSection}>
             <div className={styles.userInfo}>
-              <Link href="/profile/edit" className={styles.avatarLink}>
+              <Link href="/profile/private" className={styles.avatarLink}>
                 <Image
-                  // @ts-ignore: user may have profile_picture or image from backend
-                  src={(user as any)?.profile_picture || (user as any)?.image || '/default-avatar.png'}
-                  alt={user.name || 'User'}
+                  src={user?.profile_picture ? `${process.env.NEXT_PUBLIC_API_URL}${user.profile_picture}` : '/default-avatar.png'}
+                  alt={user?.name && user.name.trim() !== '' ? user.name : 'User profile picture'}
                   width={40}
                   height={40}
                   className={styles.avatar}

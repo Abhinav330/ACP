@@ -1085,6 +1085,29 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/upload-profile-picture", dependencies=[Depends(require_user)])
+async def upload_profile_picture(file: UploadFile = File(...)):
+    try:
+        # Create a unique filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"profile_{timestamp}_{file.filename}"
+        
+        # Save to the images directory
+        file_path = IMAGES_DIR / filename
+        
+        # Write the file
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Return the relative URL path that can be used to access the image
+        return {
+            "url": f"/api/v1/images/{filename}",
+            "filename": filename
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Add these models after other models
 class QuestionCollection(BaseModel):
     name: str
@@ -1857,6 +1880,10 @@ async def update_private_profile(
         updated_profile = await profile_collection.find_one({"user_id": user_id})
         if updated_profile and "_id" in updated_profile:
             updated_profile["_id"] = str(updated_profile["_id"])
+        # Patch: Add top-level linkedin_url and website_url from social_links
+        social_links = updated_profile.get("social_links", {})
+        updated_profile["linkedin_url"] = social_links.get("linkedin", "")
+        updated_profile["website_url"] = social_links.get("portfolio", "")
         return updated_profile
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1936,6 +1963,23 @@ async def get_private_profile(authorization: str = Header(None)):
         profile = await profile_collection.find_one({"user_id": user_id})
     if profile and "_id" in profile:
         profile["_id"] = str(profile["_id"])
+    # Patch: Add top-level linkedin_url and website_url from social_links
+    social_links = profile.get("social_links", {})
+    profile["linkedin_url"] = social_links.get("linkedin", "")
+    profile["website_url"] = social_links.get("portfolio", "")
+
+    # Calculate top_percentage
+    try:
+        all_profiles = await profile_collection.find({}, {"total_score": 1, "user_id": 1}).to_list(length=None)
+        scores = sorted([p.get("total_score", 0) for p in all_profiles], reverse=True)
+        user_score = profile.get("total_score", 0)
+        user_rank = scores.index(user_score) + 1 if user_score in scores else len(scores)
+        total_users = len(scores)
+        top_percentage = round((user_rank / total_users) * 100, 2) if total_users > 0 else 100.0
+        profile["top_percentage"] = top_percentage
+    except Exception as e:
+        profile["top_percentage"] = 100.0
+
     return profile
 
 # Uvicorn configuration

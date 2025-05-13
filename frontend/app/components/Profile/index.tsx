@@ -15,9 +15,7 @@ import {
   FaKey
 } from 'react-icons/fa';
 import styles from './Profile.module.css';
-// @ts-ignore
-import drawContributionGraph from 'github-contribution-graph';
-import '@/app/styles/contribution-graph.css';
+import ActivityCalendar from 'react-activity-calendar';
 
 interface ProfileProps {
   userId?: string;
@@ -53,8 +51,38 @@ interface ProfileData {
   contribution_data?: { date: string; count: number }[];
 }
 
+// Helper to generate all dates for the current year
+function getAllDatesForCurrentYear() {
+  const dates = [];
+  const year = new Date().getFullYear();
+  const start = new Date(`${year}-01-01`);
+  const end = new Date(`${year}-12-31`);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    dates.push(new Date(d).toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+// Helper to merge user contributions with all dates for the current year
+function getCurrentYearContributionData(userData: { date: string; count: number }[]) {
+  const allDates = getAllDatesForCurrentYear();
+  const userMap = new Map(userData.map(item => [item.date, item.count]));
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  return allDates.map(date => {
+    const count = Number(userMap.get(date)) || 0;
+    const isFuture = date > todayStr;
+    return {
+      date,
+      count: isFuture ? 0 : count,
+      level: isFuture ? 0 : Math.min(count, 4),
+      isFuture,
+    };
+  });
+}
+
 export default function Profile({ userId, isPrivate = false, onEdit, onChangePassword }: ProfileProps) {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +125,7 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
     if (!e.target.files?.[0] || !session?.user?.token) return;
 
     const formData = new FormData();
-    formData.append('profile_picture', e.target.files[0]);
+    formData.append('file', e.target.files[0]);
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-profile-picture`, {
@@ -109,10 +137,44 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
         body: formData
       });
 
-      if (!response.ok) throw new Error('Failed to upload profile picture');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Failed to upload profile picture');
+      }
+      
       const data = await response.json();
-      setProfile(prev => prev ? { ...prev, profile_picture: data.profile_picture_url } : null);
+      
+      // Update the profile with the new picture URL
+      const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/private-profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.user.token}`,
+          'X-User-Email': session.user.email || ''
+        },
+        body: JSON.stringify({
+          profile_picture: data.url
+        })
+      });
+
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json().catch(() => null);
+        throw new Error(errorData?.error || 'Failed to update profile with new picture');
+      }
+      
+      const updatedProfile = await updateResponse.json();
+      setProfile(prev => prev ? { ...prev, profile_picture: data.url } : null);
+
+      // Update the session with the new profile picture
+      await updateSession({
+        ...session,
+        user: {
+          ...session.user,
+          profile_picture: data.url
+        }
+      });
     } catch (error) {
+      console.error('Profile picture upload error:', error);
       setError(error instanceof Error ? error.message : 'Failed to upload profile picture');
     }
   };
@@ -144,8 +206,8 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
             <div className={styles.profilePictureContainer}>
               {profile.profile_picture ? (
                 <Image
-                  src={profile.profile_picture}
-                  alt={profile.user_name}
+                  src={`${process.env.NEXT_PUBLIC_API_URL}${profile.profile_picture}`}
+                  alt={profile?.user_name && profile.user_name.trim() !== '' ? profile.user_name : 'Profile picture'}
                   width={150}
                   height={150}
                   className={styles.profilePicture}
@@ -287,12 +349,29 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
             <div className={styles.sectionHeader}>
               <h2>Recent Activity</h2>
             </div>
-            {/* Contribution Graph */}
-            {profile.contribution_data && profile.contribution_data.length > 0 ? (
-              <ContributionGraph data={formatContributionData(profile.contribution_data)} />
-            ) : (
-              <div className={styles.noActivity}>No recent activity</div>
-            )}
+            <ActivityCalendar
+              data={getCurrentYearContributionData(profile.contribution_data || [])}
+              colorScheme="light"
+              blockSize={12}
+              blockMargin={2}
+              fontSize={14}
+              theme={{
+                light: ['#e3f0fc', '#90cdf4', '#4299e1', '#2b6cb0', '#16588e'],
+                dark: ['#1a202c', '#2a4365', '#2b6cb0', '#3182ce', '#63b3ed'],
+              }}
+              transformDayElement={(element, day) =>
+                (day as any).isFuture
+                  ? React.cloneElement(element, {
+                      style: {
+                        ...element.props.style,
+                        background: '#e5e7eb', // grey
+                        border: '1px solid #e5e7eb',
+                        cursor: 'not-allowed',
+                      },
+                    })
+                  : element
+              }
+            />
             <div className={styles.activityList}>
               {profile.activity_logs.map((activity, index) => (
                 <div key={index} className={styles.activityItem}>
@@ -317,41 +396,4 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
       </div>
     </div>
   );
-}
-
-// ContributionGraph component
-interface ContributionGraphProps {
-  data: Record<string, { done: number; not_done: number; date: string }[]>;
-}
-function ContributionGraph({ data }: ContributionGraphProps) {
-  useEffect(() => {
-    drawContributionGraph({
-      data,
-      ssr: false,
-      config: {
-        graphMountElement: '#contribution-graph',
-        graphWidth: 723,
-        graphHeight: 113,
-        graphTheme: 'standard',
-      },
-    });
-  }, [data]);
-  return <div id="contribution-graph" />;
-}
-
-// Helper to format contribution_data for the graph
-function formatContributionData(
-  contributionData: { date: string; count: number }[]
-): Record<string, { done: number; not_done: number; date: string }[]> {
-  const result: Record<string, { done: number; not_done: number; date: string }[]> = {};
-  contributionData.forEach((item) => {
-    const year = item.date.slice(0, 4);
-    if (!result[year]) result[year] = [];
-    result[year].push({
-      done: item.count,
-      not_done: 0,
-      date: item.date,
-    });
-  });
-  return result;
 } 

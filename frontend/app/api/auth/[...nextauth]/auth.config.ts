@@ -11,6 +11,7 @@ interface User extends NextAuthUser {
   is_admin: boolean;
   is_restricted: boolean;
   token: string;
+  profile_picture?: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -104,7 +105,22 @@ export const authOptions: NextAuthOptions = {
           token: token.token as string,
           firstName: (token as any).firstName as string,
           lastName: (token as any).lastName as string,
-        } as any;
+        } as User;
+
+        // Fetch the latest profile to get profile_picture
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/private-profile`, {
+            headers: {
+              Authorization: `Bearer ${token.token}`,
+            },
+          });
+          if (res.ok) {
+            const profile = await res.json();
+            session.user.profile_picture = profile.profile_picture || '';
+          }
+        } catch (e) {
+          session.user.profile_picture = '';
+        }
       }
       return session;
     },

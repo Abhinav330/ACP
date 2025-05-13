@@ -55,6 +55,13 @@ export default function EditProfilePage() {
 
     setIsSaving(true);
     try {
+      const body = {
+        ...profile,
+        social_links: {
+          linkedin: profile.linkedin_url || "",
+          portfolio: profile.website_url || "",
+        }
+      };
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/private-profile`, {
         method: 'PUT',
         headers: {
@@ -62,7 +69,7 @@ export default function EditProfilePage() {
           'Authorization': `Bearer ${session.user.token}`,
           'X-User-Email': session.user.email || ''
         },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) throw new Error('Failed to update profile');
