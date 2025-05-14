@@ -42,8 +42,12 @@ function LoginContent() {
         return;
       }
 
-      // Redirect all users to learning hub
-      router.replace('/learning-hub');
+      // Redirect admins to admin panel, others to learning hub
+      if (session.user.is_admin) {
+        router.replace('/admin/admin_controls');
+      } else {
+        router.replace('/learning-hub');
+      }
     }
   }, [session, status, router]);
 

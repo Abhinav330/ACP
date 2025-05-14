@@ -262,7 +262,33 @@ header *,
 #stats {
   border-radius: 3px 3px 0 0;
   overflow: hidden;
+  user-select: none;
   -webkit-user-select: none;
+  user-select: None;
   margin-top: 5px;
   margin-left: 5px;
+}
+
+/* Force correct background and text color for @uiw/react-md-editor */
+.w-md-editor, 
+.w-md-editor-text, 
+.w-md-editor-text-input, 
+.w-md-editor-preview, 
+.w-md-editor-toolbar {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+.w-md-editor-preview, .w-md-editor-preview * {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+.w-md-editor-text-input, 
+.w-md-editor-text-input textarea, 
+.w-md-editor-text, 
+.w-md-editor-text * {
+  color: #111 !important;
+  background: #fff !important;
+  -webkit-text-fill-color: #111 !important;
 } 

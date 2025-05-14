@@ -25,6 +25,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import asyncio
+from fastapi import APIRouter
 
 # Load environment variables from .env file
 load_dotenv()
@@ -61,6 +62,7 @@ questions_collection = db['Q_bank']
 submissions_collection = db['submissions']
 user_progress_collection = db['user_progress']
 profile_collection = db['User_info']
+modules_collection = db['modules']
 
 # Initialize profile collection
 # profile_collection = db['profiles']
@@ -653,16 +655,18 @@ async def create_question(question: Question):
     try:
         question_dict = question.dict()
         question_dict['created_at'] = datetime.now(timezone.utc)
-        
+        # Backward compatibility
+        if 'moduleId' not in question_dict and 'Q_type' in question_dict:
+            question_dict['moduleId'] = None
+        if 'Q_type' not in question_dict and 'moduleId' in question_dict:
+            question_dict['Q_type'] = None
         # Ensure images field is properly formatted
         if 'images' in question_dict:
             question_dict['images'] = [
                 {'url': img['url'], 'caption': img['caption']} 
                 for img in question_dict['images']
             ]
-        
         result = await questions_collection.insert_one(question_dict)
-        
         if result.inserted_id:
             created_question = await questions_collection.find_one({'_id': result.inserted_id})
             return serialize_question(created_question)
@@ -672,45 +676,32 @@ async def create_question(question: Question):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/questions", dependencies=[Depends(require_user)])
-async def get_questions(category: Optional[str] = None, difficulty: Optional[str] = None):
-    try:
-        # Log the request
-        print(f"Fetching questions with filters - Category: {category}, Difficulty: {difficulty}")
-        
-        # Build query based on filters
-        query = {}
-        if category:
-            query["category"] = category
-        if difficulty:
-            query["difficulty"] = difficulty
+async def get_questions(
+    moduleId: Optional[str] = None,
+    Q_type: Optional[str] = None,
+    category: Optional[str] = None,
+    difficulty: Optional[str] = None
+):
+    query = {}
+    if moduleId:
+        query["moduleId"] = moduleId
+    elif Q_type:
+        query["Q_type"] = Q_type
+    if category:
+        query["category"] = category
+    if difficulty:
+        query["difficulty"] = difficulty
 
-        # Fetch questions with error handling
-        try:
-            cursor = questions_collection.find(query)
-            questions = await cursor.to_list(length=None)
-            if not questions:
-                print("No questions found matching the criteria")
-                return []
-            # Convert ObjectId to string for JSON serialization
-            for question in questions:
-                question["id"] = str(question["_id"])
-                del question["_id"]
-            print(f"Successfully fetched {len(questions)} questions")
-            return questions
-        except Exception as db_error:
-            print(f"Database error while fetching questions: {db_error}")
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to fetch questions from database"
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Unexpected error in get_questions: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="An unexpected error occurred while fetching questions"
-        )
+    cursor = questions_collection.find(query)
+    questions = await cursor.to_list(length=None)
+    for question in questions:
+        question["id"] = str(question["_id"])
+        del question["_id"]
+        if "moduleId" not in question:
+            question["moduleId"] = None
+        if "Q_type" not in question:
+            question["Q_type"] = None
+    return questions
 
 @app.get("/api/questions/filters", dependencies=[Depends(require_user)])
 async def get_filters():
@@ -735,56 +726,42 @@ async def get_filters():
 @app.put("/api/questions/{question_id}", dependencies=[Depends(require_admin)])
 async def update_question(question_id: str, question: Question):
     try:
-        # Convert the question model to a dictionary
         question_dict = question.dict()
-        
-        # Add update timestamp
         question_dict['updated_at'] = datetime.now(timezone.utc)
-        
+        # Backward compatibility
+        if 'moduleId' not in question_dict and 'Q_type' in question_dict:
+            question_dict['moduleId'] = None
+        if 'Q_type' not in question_dict and 'moduleId' in question_dict:
+            question_dict['Q_type'] = None
         # Ensure all fields are properly formatted
         if 'images' in question_dict:
             question_dict['images'] = [
                 {'url': img['url'], 'caption': img['caption']} 
                 for img in question_dict['images']
             ]
-        
-        # Ensure examples have proper language fields
         if 'examples' in question_dict:
             for example in question_dict['examples']:
                 example['inputLanguage'] = example.get('inputLanguage', 'plaintext')
                 example['outputLanguage'] = example.get('outputLanguage', 'plaintext')
-                # Ensure image fields exist
                 if 'inputImage' not in example:
                     example['inputImage'] = None
                 if 'outputImage' not in example:
                     example['outputImage'] = None
-
-        # Ensure test cases have proper order and points
         if 'testCases' in question_dict:
             for i, test_case in enumerate(question_dict['testCases']):
                 test_case['order'] = i + 1
                 test_case['points'] = int(test_case.get('points', 0))
-
-        # Ensure starterCodes is a list
         if 'starterCodes' not in question_dict:
             question_dict['starterCodes'] = []
-
-        # Ensure allowedLanguages is a list
         if 'allowedLanguages' not in question_dict:
             question_dict['allowedLanguages'] = ['python']
-
-        # Ensure Q_type exists
         if 'Q_type' not in question_dict:
             question_dict['Q_type'] = 'pandas'
-
-        # Update the question in the database
         result = await questions_collection.update_one(
             {'_id': ObjectId(question_id)},
             {'$set': question_dict}
         )
-        
         if result.modified_count:
-            # Fetch and return the updated question
             updated_question = await questions_collection.find_one({'_id': ObjectId(question_id)})
             if updated_question:
                 return serialize_question(updated_question)
@@ -793,7 +770,7 @@ async def update_question(question_id: str, question: Question):
         else:
             raise HTTPException(status_code=404, detail="Question not found")
     except Exception as e:
-        print(f"Error updating question: {str(e)}")  # Add logging
+        print(f"Error updating question: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/questions/{question_id}", dependencies=[Depends(require_admin)])
@@ -1981,6 +1958,60 @@ async def get_private_profile(authorization: str = Header(None)):
         profile["top_percentage"] = 100.0
 
     return profile
+
+@app.get("/api/admin/modules", dependencies=[Depends(require_admin)])
+async def list_modules():
+    modules = await modules_collection.find({}).to_list(length=None)
+    for module in modules:
+        module["id"] = str(module["_id"])
+        del module["_id"]
+    return modules
+
+@app.post("/api/admin/modules", dependencies=[Depends(require_admin)])
+async def create_module(module: dict = Body(...)):
+    now = datetime.utcnow().isoformat()
+    module["createdAt"] = now
+    module["updatedAt"] = now
+    result = await modules_collection.insert_one(module)
+    module["id"] = str(result.inserted_id)
+    return module
+
+@app.put("/api/admin/modules/{module_id}", dependencies=[Depends(require_admin)])
+async def update_module(module_id: str, module: dict = Body(...)):
+    module["updatedAt"] = datetime.utcnow().isoformat()
+    await modules_collection.update_one({"_id": ObjectId(module_id)}, {"$set": module})
+    return {"id": module_id, "status": "updated"}
+
+@app.delete("/api/admin/modules/{module_id}", dependencies=[Depends(require_admin)])
+async def delete_module(module_id: str):
+    await modules_collection.delete_one({"_id": ObjectId(module_id)})
+    return {"id": module_id, "status": "deleted"}
+
+@app.get("/api/admin/questions", dependencies=[Depends(require_admin)])
+async def get_admin_questions():
+    try:
+        cursor = questions_collection.find({})
+        questions = await cursor.to_list(length=None)
+        for question in questions:
+            question["id"] = str(question["_id"])
+            del question["_id"]
+            if "moduleId" not in question:
+                question["moduleId"] = None
+            if "Q_type" not in question or not question["Q_type"]:
+                question["Q_type"] = "unknown"
+        return questions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/questions/{question_id}", dependencies=[Depends(require_admin)])
+async def get_admin_question(question_id: str):
+    try:
+        question = await questions_collection.find_one({'_id': ObjectId(question_id)})
+        if not question:
+            raise HTTPException(status_code=404, detail="Question not found")
+        return serialize_question(question)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Uvicorn configuration
 if __name__ == "__main__":

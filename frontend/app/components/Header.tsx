@@ -99,7 +99,12 @@ const Header: React.FC = () => {
                   style={{ borderRadius: '50%', objectFit: 'cover', marginRight: '0.5rem', cursor: 'pointer' }}
                 />
               </Link>
-              <span className={styles.userName}>{user.name}</span>
+              <span className={styles.userName}>
+                {user.name}
+                {user.is_admin && (
+                  <span className={styles.adminBadge}>Admin</span>
+                )}
+              </span>
               <span className={styles.userEmailText} style={{ pointerEvents: 'none', opacity: 0.7 }}>
                 ({user.email})
               </span>

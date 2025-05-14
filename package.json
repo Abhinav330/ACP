@@ -5,6 +5,8 @@
     "tailwindcss": "^4.1.6"
   },
   "dependencies": {
+    "@uiw/react-markdown-preview": "^5.1.4",
+    "@uiw/react-md-editor": "^4.0.6",
     "github-contribution-graph": "^2.0.2",
     "react-activity-calendar": "^2.7.11"
   }

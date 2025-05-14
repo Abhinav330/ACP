@@ -1,10 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const HomePage = () => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.is_admin) {
+      router.replace("/admin/questions");
+    }
+  }, [status, session, router]);
+
   return (
     <div className={styles.container}>
       {/* Hero Section */}
