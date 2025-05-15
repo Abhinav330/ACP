@@ -398,4 +398,121 @@
   .achievementsGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.goldBadge {
+  background: linear-gradient(135deg, #ffe066 0%, #ffd700 100%);
+  color: #bfa100;
+  border: 2px solid #ffd700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.25);
+  z-index: 2;
+}
+.goldTrophyIcon {
+  color: #ffd700;
+  font-size: 2.2rem;
+  margin-right: 0.3rem;
+}
+.goldText {
+  color: #bfa100;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.silverBadge {
+  background: linear-gradient(135deg, #f5f6fa 0%, #c0c0c0 100%);
+  color: #7d7d7d;
+  border: 2px solid #c0c0c0;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.18);
+  z-index: 2;
+}
+.silverMedalIcon {
+  color: #c0c0c0;
+  font-size: 1.8rem;
+  margin-right: 0.3rem;
+}
+.silverText {
+  color: #7d7d7d;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.bronzeBadge {
+  background: linear-gradient(135deg, #ffe0b2 0%, #cd7f32 100%);
+  color: #a97142;
+  border: 2px solid #cd7f32;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.18);
+  z-index: 2;
+}
+.bronzeMedalIcon {
+  color: #cd7f32;
+  font-size: 1.8rem;
+  margin-right: 0.3rem;
+}
+.bronzeText {
+  color: #a97142;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.modulePercentilesTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+.modulePercentilesTable th, .modulePercentilesTable td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+.modulePercentilesTable th {
+  background: #e3f0fc;
+  color: #16588e;
+  font-weight: 600;
+  border-bottom: 2px solid #dbeafe;
+}
+.modulePercentilesTable td {
+  border-bottom: 1px solid #e5e7eb;
+  color: #222;
+}
+.modulePercentilesTable tr:last-child td {
+  border-bottom: none;
+}
+
+.moduleGaugesWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.moduleGaugeBox {
+  border: 2px solid #222;
+  border-radius: 6px;
+  background: #fff;
+  padding: 1rem 1.2rem 0.7rem 1.2rem;
+  min-width: 180px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.moduleGaugeTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  text-align: center;
+}
+
+.moduleGaugeScore {
+  margin-top: 0.2rem;
+  font-size: 1.05rem;
+  color: #222;
+  font-weight: 500;
+  text-align: center;
 } 

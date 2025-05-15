@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import OAuth2PasswordBearer
-from pymongo import MongoClient
+# from fastapi.security import OAuth2PasswordBearer
+# from pymongo import MongoClient
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Callable, Union
 import bcrypt
@@ -1752,6 +1752,8 @@ async def submit_solution(submission: Submission) -> dict:
 
             # Update user profile stats
             await update_user_profile_stats(str(submission.candidate_id))
+            # Update per-module percentiles
+            await update_user_module_percentiles(str(submission.candidate_id))
 
         return {
             "status": "success",
@@ -1763,6 +1765,31 @@ async def submit_solution(submission: Submission) -> dict:
         print(f"Error in submit_solution: {str(e)}")  # Debug log
         raise HTTPException(status_code=500, detail=str(e))
 
+# Helper function for bucketing top percentage
+def bucket_top_percentage(top_percentage: float) -> str:
+    if top_percentage <= 1:
+        return 1
+    elif top_percentage <= 5:
+        return 5
+    elif top_percentage <= 10:
+        return 10
+    elif top_percentage <= 20:
+        return 20
+    elif top_percentage <= 25:
+        return 25
+    elif top_percentage <= 30:
+        return 30
+    elif top_percentage <= 35:
+        return 35
+    elif top_percentage <= 40:
+        return 40
+    elif top_percentage <= 45:
+        return 45
+    elif top_percentage <= 50:
+        return 50
+    else:
+        return top_percentage
+
 @app.get("/api/profiles/{user_id}", dependencies=[Depends(require_user)])
 async def get_profile(user_id: str):
     profile = await profile_collection.find_one({"user_id": user_id})
@@ -1770,6 +1797,23 @@ async def get_profile(user_id: str):
         raise HTTPException(status_code=404, detail="Profile not found")
     if "_id" in profile:
         profile["_id"] = str(profile["_id"])
+    # Patch: Add top-level linkedin_url and website_url from social_links
+    social_links = profile.get("social_links", {})
+    profile["linkedin_url"] = social_links.get("linkedin", "")
+    profile["website_url"] = social_links.get("portfolio", "")
+    # Calculate top_percentage (same as private profile)
+    try:
+        all_profiles = await profile_collection.find({}, {"total_score": 1, "user_id": 1}).to_list(length=None)
+        scores = sorted([p.get("total_score", 0) for p in all_profiles], reverse=True)
+        user_score = profile.get("total_score", 0)
+        user_rank = scores.index(user_score) + 1 if user_score in scores else len(scores)
+        total_users = len(scores)
+        top_percentage = round((user_rank / total_users) * 100, 2) if total_users > 0 else 100.0
+        profile["top_percentage"] = bucket_top_percentage(top_percentage)
+    except Exception as e:
+        profile["top_percentage"] = "Top 100%"
+    # After fetching profile ...
+    profile["module_percentiles"] = profile.get("module_percentiles", {})
     return profile
 
 @app.put("/api/private-profile", dependencies=[Depends(require_user)])
@@ -1861,6 +1905,8 @@ async def update_private_profile(
         social_links = updated_profile.get("social_links", {})
         updated_profile["linkedin_url"] = social_links.get("linkedin", "")
         updated_profile["website_url"] = social_links.get("portfolio", "")
+        # Update per-module percentiles
+        await update_user_module_percentiles(user_id)
         return updated_profile
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1892,6 +1938,9 @@ async def update_user_profile_stats(user_id: str):
         }}
     ]
     contribution_data = await submissions_collection.aggregate(pipeline).to_list(length=None)
+    # Fetch current module_percentiles to preserve it
+    current_profile = await profile_collection.find_one({"user_id": user_id})
+    module_percentiles = current_profile.get("module_percentiles", {}) if current_profile else {}
     profile_data = {
         "user_id": user_id,
         "username": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
@@ -1919,14 +1968,65 @@ async def update_user_profile_stats(user_id: str):
         "preferred_languages": [],
         "created_at": user.get("created_at", datetime.utcnow()),
         "updated_at": datetime.utcnow(),
-                    "total_score": total_score,
+        "total_score": total_score,
         "total_questions_solved": total_questions_solved,
-        "contribution_data": contribution_data
+        "contribution_data": contribution_data,
+        "module_percentiles": module_percentiles
     }
     await profile_collection.update_one(
         {"user_id": user_id},
         {"$set": profile_data},
         upsert=True
+    )
+    # Update per-module percentiles
+    await update_user_module_percentiles(user_id)
+
+async def update_user_module_percentiles(user_id: str):
+    modules = await modules_collection.find({}).to_list(length=None)
+    module_names = [m['name'] for m in modules]
+    module_percentiles = {}
+
+    for module in module_names:
+        # Get all users' scores for this module
+        user_scores = []
+        async for user in profile_collection.find({}):
+            uid = user.get('user_id')
+            # Aggregate user's score for this module
+            pipeline = [
+                {"$match": {"candidate_id": ObjectId(uid), "status": "success"}},
+                {"$lookup": {
+                    "from": "Q_bank",
+                    "localField": "question_id",
+                    "foreignField": "_id",
+                    "as": "question"
+                }},
+                {"$unwind": "$question"},
+                {"$match": {"question.Q_type": module}},
+                {"$group": {"_id": None, "score": {"$sum": "$score"}}}
+            ]
+            agg = await submissions_collection.aggregate(pipeline).to_list(length=None)
+            score = agg[0]['score'] if agg else 0
+            user_scores.append((uid, score))
+
+        # Now, for each user, calculate ranking percentile
+        total_users = len(user_scores)
+        user_score = 0
+        for uid, score in user_scores:
+            if uid == user_id:
+                user_score = score
+                break
+        lower_count = sum(1 for _, s in user_scores if s < user_score)
+        percentile = 100 - (lower_count / total_users) * 100 if total_users > 0 else 100.0
+        # Always include all modules
+        module_percentiles[module] = {
+            'score': user_score,
+            'percentile': round(percentile, 1) if user_score > 0 else 100.0
+        }
+
+    # Update user_info
+    await profile_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"module_percentiles": module_percentiles}}
     )
 
 @app.get("/api/private-profile", dependencies=[Depends(require_user)])
@@ -1953,9 +2053,11 @@ async def get_private_profile(authorization: str = Header(None)):
         user_rank = scores.index(user_score) + 1 if user_score in scores else len(scores)
         total_users = len(scores)
         top_percentage = round((user_rank / total_users) * 100, 2) if total_users > 0 else 100.0
-        profile["top_percentage"] = top_percentage
+        profile["top_percentage"] = bucket_top_percentage(top_percentage)
     except Exception as e:
-        profile["top_percentage"] = 100.0
+        profile["top_percentage"] = "Top 100%"
+    # After fetching profile ...
+    profile["module_percentiles"] = profile.get("module_percentiles", {})
 
     return profile
 

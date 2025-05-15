@@ -16,6 +16,12 @@ import {
 } from 'react-icons/fa';
 import styles from './Profile.module.css';
 import ActivityCalendar from 'react-activity-calendar';
+import GaugeChart from 'react-gauge-chart';
+
+// Fix for missing types for react-gauge-chart
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line
 
 interface ProfileProps {
   userId?: string;
@@ -49,6 +55,12 @@ interface ProfileData {
   last_name?: string;
   username?: string;
   contribution_data?: { date: string; count: number }[];
+  module_percentiles?: {
+    [module: string]: {
+      score: number;
+      percentile: number;
+    };
+  };
 }
 
 // Helper to generate all dates for the current year
@@ -80,6 +92,21 @@ function getCurrentYearContributionData(userData: { date: string; count: number 
     };
   });
 }
+
+// Helper to map percentile to band/label/color
+const getPercentileBand = (percentile: number) => {
+  if (percentile <= 1) return { label: 'Top 1%', color: '#FFD700' };
+  if (percentile <= 5) return { label: 'Top 5%', color: '#C0C0C0' };
+  if (percentile <= 10) return { label: 'Top 10%', color: '#CD7F32' };
+  if (percentile <= 20) return { label: 'Top 20%', color: '#4F8EF7' };
+  if (percentile <= 25) return { label: 'Top 25%', color: '#4F8EF7' };
+  if (percentile <= 30) return { label: 'Top 30%', color: '#4F8EF7' };
+  if (percentile <= 35) return { label: 'Top 35%', color: '#4F8EF7' };
+  if (percentile <= 40) return { label: 'Top 40%', color: '#4F8EF7' };
+  if (percentile <= 45) return { label: 'Top 45%', color: '#4F8EF7' };
+  if (percentile <= 50) return { label: 'Top 50%', color: '#4F8EF7' };
+  return { label: `Top ${percentile.toFixed(1)}%`, color: '#A0AEC0' };
+};
 
 export default function Profile({ userId, isPrivate = false, onEdit, onChangePassword }: ProfileProps) {
   const { data: session, update: updateSession } = useSession();
@@ -198,6 +225,54 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
 
   const themeClass = profile.top_percentage <= 10 ? styles.topRank : '';
 
+  // Render per-module percentiles gauge
+  const renderModulePercentiles = () => {
+    const modulePercentiles = (profile as any).module_percentiles || {};
+    // Only show modules where score > 0
+    const moduleNames = Object.keys(modulePercentiles).filter(
+      (mod) => modulePercentiles[mod].score > 0
+    );
+    if (moduleNames.length === 0) return null;
+    return (
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2>Module Rankings</h2>
+        </div>
+        <div className={styles.moduleGaugesWrapper}>
+          {moduleNames.map((mod) => {
+            const percentile = modulePercentiles[mod].percentile;
+            const score = modulePercentiles[mod].score;
+            // GaugeChart expects percent (0-1)
+            const percent = Math.min(percentile, 100) / 100;
+            return (
+              <div key={mod} className={styles.moduleGaugeBox}>
+                <div className={styles.moduleGaugeTitle}>{mod}</div>
+                <GaugeChart
+                  id={`gauge-${mod}`}
+                  nrOfLevels={1}
+                  arcsLength={[1]}
+                  colors={['#2563eb']}
+                  percent={percent}
+                  arcPadding={0}
+                  hideText={true}
+                  needleColor="#222"
+                  needleBaseColor="#222"
+                  animate={false}
+                  style={{ width: '120px', margin: '0 auto' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '120px', margin: '0 auto', fontSize: '0.9rem', color: '#888' }}>
+                  <span>0</span>
+                  <span>100</span>
+                </div>
+                <div className={styles.moduleGaugeScore}>Top {percentile.toFixed(1)}%</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={`${styles.container} ${themeClass}`}>
       <div className={styles.profileCard}>
@@ -227,15 +302,28 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
                 Change Photo
               </label>
             )}
-            {profile.top_percentage <= 10 && (
-              <div className={styles.rankBadge}>
-                {profile.top_percentage <= 1 ? (
-                  <FaCrown className={styles.crownIcon} />
-                ) : (
-                  <FaStar className={styles.starIcon} />
+            {/* Rank Badge for Top % */}
+            {profile.top_percentage && (
+              <>
+                {profile.top_percentage === 1 && (
+                  <div className={`${styles.rankBadge} ${styles.goldBadge}`}>
+                    <FaTrophy className={styles.goldTrophyIcon} />
+                    <span className={styles.goldText}>{profile.top_percentage}</span>
+                  </div>
                 )}
-                <span>Top {profile.top_percentage}%</span>
-              </div>
+                {profile.top_percentage === 5 && (
+                  <div className={`${styles.rankBadge} ${styles.silverBadge}`}>
+                    <FaMedal className={styles.silverMedalIcon} />
+                    <span className={styles.silverText}>{profile.top_percentage}</span>
+                  </div>
+                )}
+                {profile.top_percentage === 10 && (
+                  <div className={`${styles.rankBadge} ${styles.bronzeBadge}`}>
+                    <FaMedal className={styles.bronzeMedalIcon} />
+                    <span className={styles.bronzeText}>{profile.top_percentage}</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -244,6 +332,7 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
               <h1 className={styles.userName}>{profile.first_name || ''} {profile.last_name || ''}</h1>
               <span className={styles.email}>{profile.email}</span>
             </div>
+           
 
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
@@ -282,6 +371,7 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
             </div>
             <p className={styles.usernameText}>@{profile.username}</p>
           </div>
+          {renderModulePercentiles()}
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
               <h2>Bio</h2>
@@ -359,18 +449,6 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
                 light: ['#e3f0fc', '#90cdf4', '#4299e1', '#2b6cb0', '#16588e'],
                 dark: ['#1a202c', '#2a4365', '#2b6cb0', '#3182ce', '#63b3ed'],
               }}
-              transformDayElement={(element, day) =>
-                (day as any).isFuture
-                  ? React.cloneElement(element, {
-                      style: {
-                        ...element.props.style,
-                        background: '#e5e7eb', // grey
-                        border: '1px solid #e5e7eb',
-                        cursor: 'not-allowed',
-                      },
-                    })
-                  : element
-              }
             />
             <div className={styles.activityList}>
               {profile.activity_logs.map((activity, index) => (
