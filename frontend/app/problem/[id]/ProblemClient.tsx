@@ -254,6 +254,12 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
         // Fetch question data using apiRequest
         const data = await apiRequest(`/api/questions/${id}`, { method: 'GET' });
         setQuestion(data);
+        
+        // Set initial code based on language
+        if (data.starterCodes && data.starterCodes.length > 0) {
+          const defaultCode = data.starterCodes.find((sc: StarterCode) => sc.language === language)?.code || '';
+          setCode(defaultCode);
+        }
       } catch (error) {
         console.error('Error fetching question:', error);
         setError('Failed to load question. Please try again later.');
@@ -263,28 +269,19 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
     if (status === 'authenticated') {
       checkAuthAndFetchData();
     }
-  }, [id, router, session, status]);
-
-  // Load code from localStorage or starter code on mount or when language or question changes
-  useEffect(() => {
-    if (!question) return;
-    const saved = localStorage.getItem(`problem-code-${id}-${language}`);
-    if (saved !== null) {
-      setCode(saved);
-    } else {
-      // Use starter code for the selected language
-      const defaultCode = question.starterCodes.find((sc: StarterCode) => sc.language === language)?.code || '';
-      setCode(defaultCode);
-    }
-  }, [id, language, question]);
-
-  // Save code to localStorage on change
-  useEffect(() => {
-    localStorage.setItem(`problem-code-${id}-${language}`, code);
-  }, [code, id, language]);
+  }, [id, language, router, session, status]);
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setLanguage(e.target.value);
+    const newLanguage = e.target.value;
+    setLanguage(newLanguage);
+    
+    // Find and set the starter code for the selected language
+    if (question) {
+      const starterCode = question.starterCodes.find(sc => sc.language === newLanguage);
+      if (starterCode) {
+        setCode(starterCode.code);
+      }
+    }
   };
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -292,7 +289,9 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
   };
 
   const handleEditorChange = (value: string | undefined) => {
-    setCode(value || '');
+    if (value !== undefined) {
+      setCode(value);
+    }
   };
 
   const handleRunCode = async () => {
