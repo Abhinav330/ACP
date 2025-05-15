@@ -11,3 +11,4 @@ sqlalchemy==2.0.23
 email-validator==2.1.0.post1
 python-multipart==0.0.6
 emails==0.6 
+azure-storage-blob

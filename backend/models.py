@@ -118,3 +118,81 @@ class ActivityLog(Base):
 SUBMISSIONS_COLLECTION = "submissions"
 USER_PROGRESS_COLLECTION = "user_progress" 
 PROFILE_COLLECTION = 'User_info' 
+
+
+class UserSignup(BaseModel):
+    email: EmailStr
+    password: str
+    firstName: Optional[str] = None
+    lastName: str
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    is_admin: Optional[bool] = False
+    is_restricted: Optional[bool] = False
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str
+
+# Question models
+class TestCase(BaseModel):
+    input: str
+    expected_output: str
+    is_hidden: bool = False
+    order: int
+    points: int = 0
+
+class Example(BaseModel):
+    input: str
+    output: str
+    inputLanguage: str = "plaintext"
+    outputLanguage: str = "plaintext"
+    inputImage: Optional[Dict[str, str]] = None
+    outputImage: Optional[Dict[str, str]] = None
+
+class StarterCode(BaseModel):
+    language: str
+    code: str
+
+class ImageData(BaseModel):
+    url: str
+    caption: str
+
+class Question(BaseModel):
+    title: str
+    summary: str
+    description: str
+    category: List[str]
+    difficulty: str
+    points: int
+    examples: List[Example]
+    starterCodes: List[StarterCode] = []
+    allowedLanguages: List[str] = ['python']
+    testCases: List[TestCase] = []
+    docker_runner: str = "only_python"
+    images: List[ImageData] = []
+    Q_type: str = "pandas"  # Module type: pandas, sklearn, ai
+    working_driver: str = ""  # Working code solution
+
+class QuestionCreate(Question):
+    pass
+
+class QuestionUpdate(Question):
+    pass
+
+class QuestionInDB(Question):
+    id: str
+
+class CodeExecutionRequest(BaseModel):
+    code: str
+    language: str
+    question_id: str
+    is_submission: bool = False
+    docker_runner: str = "only_python"

@@ -8,13 +8,23 @@ from typing import Optional, List, Dict, Callable, Union
 import bcrypt
 from datetime import datetime, timezone, timedelta
 import uvicorn
+from helper import hash_password, verify_password,  generate_verification_token
 from bson import ObjectId
 import subprocess
 import json
 import os
 from pathlib import Path
 from motor.motor_asyncio import AsyncIOMotorClient
-from models import Submission, UserProgress, SUBMISSIONS_COLLECTION, USER_PROGRESS_COLLECTION
+from models import (Submission, 
+                    UserProgress, 
+                    SUBMISSIONS_COLLECTION, 
+                    USER_PROGRESS_COLLECTION, 
+                    UserSignup,
+                    UserLogin,
+                    PasswordResetRequest,
+                    PasswordReset,
+                    Question,
+                    CodeExecutionRequest)
 from email_service import email_service
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
@@ -26,9 +36,13 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import asyncio
 from fastapi import APIRouter
+from azure.storage.blob import BlobServiceClient
+import uuid
 
 # Load environment variables from .env file
 load_dotenv()
+profile_picture_dir = os.getenv("PROFILE_PICTURE_PATH")
+question_images_dir = os.getenv("QUESTIONS_IMAGE_PATH")
 
 # JWT configuration for NextAuth.js compatibility
 JWT_SECRET = os.getenv("NEXTAUTH_SECRET")  # Use the same secret as NextAuth
@@ -66,6 +80,12 @@ modules_collection = db['modules']
 
 # Initialize profile collection
 # profile_collection = db['profiles']
+
+# Add Azure Storage configuration after loading environment variables
+AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+AZURE_CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER", "media")
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
+container_client = blob_service_client.get_container_client(AZURE_CONTAINER_NAME)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -126,151 +146,14 @@ app.add_middleware(
 )
 
 # Mount the uploads directory for images
-app.mount("/api/v1/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
+app.mount(profile_picture_dir, StaticFiles(directory=str(IMAGES_DIR)), name="images")
 
 # Mount the uploads directory
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Pydantic models for request validation
-class UserSignup(BaseModel):
-    email: EmailStr
-    password: str
-    firstName: Optional[str] = None
-    lastName: str
-    phone: Optional[str] = None
-    company: Optional[str] = None
-    is_admin: Optional[bool] = False
-    is_restricted: Optional[bool] = False
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class PasswordResetRequest(BaseModel):
-    email: str
-
-class PasswordReset(BaseModel):
-    token: str
-    new_password: str
-
-# Question models
-class TestCase(BaseModel):
-    input: str
-    expected_output: str
-    is_hidden: bool = False
-    order: int
-    points: int = 0
-
-class Example(BaseModel):
-    input: str
-    output: str
-    inputLanguage: str = "plaintext"
-    outputLanguage: str = "plaintext"
-    inputImage: Optional[Dict[str, str]] = None
-    outputImage: Optional[Dict[str, str]] = None
-
-class StarterCode(BaseModel):
-    language: str
-    code: str
-
-class ImageData(BaseModel):
-    url: str
-    caption: str
-
-class Question(BaseModel):
-    title: str
-    summary: str
-    description: str
-    category: List[str]
-    difficulty: str
-    points: int
-    examples: List[Example]
-    starterCodes: List[StarterCode] = []
-    allowedLanguages: List[str] = ['python']
-    testCases: List[TestCase] = []
-    docker_runner: str = "only_python"
-    images: List[ImageData] = []
-    Q_type: str = "pandas"  # Module type: pandas, sklearn, ai
-    working_driver: str = ""  # Working code solution
-
-class QuestionCreate(Question):
-    pass
-
-class QuestionUpdate(Question):
-    pass
-
-class QuestionInDB(Question):
-    id: str
-
-class CodeExecutionRequest(BaseModel):
-    code: str
-    language: str
-    question_id: str
-    is_submission: bool = False
-    docker_runner: str = "only_python"
-
-# Helper functions
-def hash_password(password: str) -> bytes:
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(password.encode('utf-8'), salt)
-
-def verify_password(plain_password: str, hashed_password: bytes) -> bool:
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
-
-def serialize_question(question: dict) -> dict:
-    """Serialize MongoDB question document to JSON-compatible format"""
-    question['id'] = str(question['_id'])
-    del question['_id']
-    return question
+app.mount(question_images_dir, StaticFiles(directory="uploads"), name="uploads")
 
 # Add after the MongoDB connection setup
-class RoleChecker:
-    def __init__(self, allowed_roles: List[str]):
-        self.allowed_roles = allowed_roles
+    
 
-    async def __call__(self, authorization: str = Header(None)) -> bool:
-        if not authorization:
-            raise HTTPException(
-                status_code=401,
-                detail="Authorization header missing",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-        try:
-            payload = await verify_token(authorization)
-            if payload.get("is_restricted", False):
-                raise HTTPException(
-                    status_code=403,
-                    detail="Your account has been restricted"
-                )
-            # Only check admin requirement if "admin" is the only allowed role
-            if "admin" in self.allowed_roles and "user" not in self.allowed_roles:
-                if not payload.get("is_admin", False):
-                    raise HTTPException(
-                        status_code=403,
-                        detail="Admin access required"
-                    )
-            return True
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-
-# Create role checker instances
-require_admin = RoleChecker(["admin"])  # Only admins
-require_user = RoleChecker(["user", "admin"])  # Both users and admins
-
-def generate_verification_token(email: str) -> str:
-    """Generate a JWT token for email verification"""
-    expiry = datetime.utcnow() + timedelta(hours=24)  # 24 hour expiry for verification
-    return jwt.encode(
-        {"email": email, "exp": expiry},
-        JWT_SECRET,
-        algorithm=JWT_ALGORITHM
-    )
 
 async def verify_token(authorization: str = Header(None)) -> dict:
     """Verify JWT token and return payload"""
@@ -1042,46 +925,26 @@ async def execute_code(execution_request: CodeExecutionRequest, authorization: s
 @app.post("/api/upload-image", dependencies=[Depends(require_admin)])
 async def upload_image(file: UploadFile = File(...)):
     try:
-        # Create a unique filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{timestamp}_{file.filename}"
-        
-        # Save to the images directory
-        file_path = IMAGES_DIR / filename
-        
-        # Write the file
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
-        
-        # Return the relative URL path that can be used to access the image
-        return {
-            "url": f"/api/v1/images/{filename}",
-            "filename": filename
-        }
+        # Generate a unique filename
+        unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
+        blob_client = container_client.get_blob_client(unique_filename)
+        data = await file.read()
+        blob_client.upload_blob(data, overwrite=True)
+        url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/{unique_filename}"
+        return {"message": "Image uploaded", "url": url, "filename": unique_filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload-profile-picture", dependencies=[Depends(require_user)])
 async def upload_profile_picture(file: UploadFile = File(...)):
     try:
-        # Create a unique filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"profile_{timestamp}_{file.filename}"
-        
-        # Save to the images directory
-        file_path = IMAGES_DIR / filename
-        
-        # Write the file
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
-        
-        # Return the relative URL path that can be used to access the image
-        return {
-            "url": f"/api/v1/images/{filename}",
-            "filename": filename
-        }
+        # Generate a unique filename
+        unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
+        blob_client = container_client.get_blob_client(unique_filename)
+        data = await file.read()
+        blob_client.upload_blob(data, overwrite=True)
+        url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/{unique_filename}"
+        return {"url": url, "filename": unique_filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
