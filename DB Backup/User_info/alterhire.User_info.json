@@ -48,7 +48,17 @@
       "count": 1,
       "date": "2025-04-15"
     }
-  ]
+  ],
+  "module_percentiles": {
+    "ai": {
+      "score": 0,
+      "percentile": 0
+    },
+    "pandas": {
+      "score": 20,
+      "percentile": 14.29
+    }
+  }
 },
 {
   "_id": {
@@ -92,7 +102,17 @@
       "count": 1,
       "date": "2025-04-14"
     }
-  ]
+  ],
+  "module_percentiles": {
+    "ai": {
+      "score": 0,
+      "percentile": 0
+    },
+    "pandas": {
+      "score": 20,
+      "percentile": 14.29
+    }
+  }
 },
 {
   "_id": {
@@ -136,7 +156,17 @@
       "count": 2,
       "date": "2025-04-15"
     }
-  ]
+  ],
+  "module_percentiles": {
+    "ai": {
+      "score": 25,
+      "percentile": 85.71
+    },
+    "pandas": {
+      "score": 20,
+      "percentile": 14.29
+    }
+  }
 },
 {
   "_id": {
@@ -180,7 +210,17 @@
       "count": 1,
       "date": "2025-04-18"
     }
-  ]
+  ],
+  "module_percentiles": {
+    "ai": {
+      "score": 0,
+      "percentile": 0
+    },
+    "pandas": {
+      "score": 20,
+      "percentile": 14.29
+    }
+  }
 },
 {
   "_id": {
@@ -219,7 +259,17 @@
   },
   "total_score": 0,
   "total_questions_solved": 0,
-  "contribution_data": []
+  "contribution_data": [],
+  "module_percentiles": {
+    "ai": {
+      "score": 0,
+      "percentile": 0
+    },
+    "pandas": {
+      "score": 0,
+      "percentile": 0
+    }
+  }
 },
 {
   "_id": {
@@ -254,14 +304,26 @@
     "$date": "2025-05-04T16:27:08.749Z"
   },
   "updated_at": {
-    "$date": "2025-05-11T21:54:26.656Z"
+    "$date": "2025-05-15T23:48:17.867Z"
   },
-  "total_score": 20,
-  "total_questions_solved": 1,
+  "total_score": 45,
+  "total_questions_solved": 2,
   "contribution_data": [
     {
       "count": 3,
+      "date": "2025-05-15"
+    },
+    {
+      "count": 3,
       "date": "2025-05-11"
+    },
+    {
+      "count": 1,
+      "date": "2025-05-13"
+    },
+    {
+      "count": 1,
+      "date": "2025-05-12"
     },
     {
       "count": 1,
@@ -271,7 +333,9 @@
       "count": 1,
       "date": "2025-05-04"
     }
-  ]
+  ],
+  "profile_picture": "profile_6817955c07947d2592548770.jpg",
+  "module_percentiles": {}
 },
 {
   "_id": {
@@ -315,5 +379,15 @@
       "count": 1,
       "date": "2025-05-07"
     }
-  ]
+  ],
+  "module_percentiles": {
+    "ai": {
+      "score": 0,
+      "percentile": 0
+    },
+    "pandas": {
+      "score": 25,
+      "percentile": 71.43
+    }
+  }
 }]

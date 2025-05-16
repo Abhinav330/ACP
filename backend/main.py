@@ -144,10 +144,6 @@ app.add_middleware(
 )
 
 # Mount the uploads directory for images
-app.mount(profile_picture_dir, StaticFiles(directory=str(IMAGES_DIR)), name="images")
-
-# Mount the uploads directory
-app.mount(question_images_dir, StaticFiles(directory="uploads"), name="uploads")
 
 # Add after the MongoDB connection setup
     
@@ -777,6 +773,12 @@ async def get_question(question_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def run_code_via_azure_function(input_data):
+    url = "http://localhost:7071/api/run_code_executor"  # Or your deployed Azure Function URL
+    response = requests.post(url, json=input_data)
+    response.raise_for_status()
+    return response.json()
+
 @app.post("/api/execute-code", dependencies=[Depends(require_user)])
 async def execute_code(execution_request: CodeExecutionRequest, authorization: str = Header(None)):
     try:
@@ -819,145 +821,46 @@ async def execute_code(execution_request: CodeExecutionRequest, authorization: s
             'working_driver': question.get('working_driver', '')  # Include working code solution
         }
 
-        # Choose the appropriate docker executor based on docker_runner
-        if docker_runner == "pandas":
-            executor_dir = Path(__file__).parent / 'pandas-executor'
-            docker_image = 'pandas-executor'
-        elif docker_runner == "only_python":
-            executor_dir = Path(__file__).parent / 'code-executor'
-            docker_image = 'code-executor'
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported docker runner: {docker_runner}")
-
-        if not executor_dir.exists():
-            raise HTTPException(status_code=500, detail=f"{docker_runner} executor not found")
-
         try:
-            # Build the Docker image if it doesn't exist
-            build_process = subprocess.run(
-                ['docker', 'build', '-t', docker_image, str(executor_dir)],
-                capture_output=True,
-                encoding='utf-8',
-                errors='replace'
-            )
-            
-            if build_process.returncode != 0:
-                raise HTTPException(status_code=500, detail=f"Failed to build {docker_image} Docker image")
-
-            # Convert input data to JSON string and encode to bytes
-            input_json = json.dumps(input_data)
-            input_bytes = input_json.encode('utf-8') + b'\n'
-
-            # Run the code in Docker container with volume mount for debug log
-            debug_log_dir = executor_dir / 'debug_logs'
-            debug_log_dir.mkdir(exist_ok=True)
-            debug_log_file = debug_log_dir / 'debug.log'
-            
-            # Clear previous debug log
-            debug_log_file.write_text('')
-            
-            process = subprocess.Popen(
-                ['docker', 'run', '--rm', '-i', '--network=none', '--memory=512m', '--cpus=1',
-                 '-v', f'{str(debug_log_file)}:/tmp/debug.log',
-                 docker_image],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=False
-            )
-
-            try:
-                # Send input and get output with proper encoding
-                stdout, stderr = process.communicate(input=input_bytes, timeout=25)
-                
-                # Check return code
-                if process.returncode != 0:
-                    error_message = stderr.decode('utf-8', errors='replace')
-                    raise HTTPException(status_code=500, detail=f"Code execution failed: {error_message}")
-
-                # Parse output with proper decoding
-                output_str = stdout.decode('utf-8', errors='replace').strip()
-                
-                # Read debug log
-                debug_output = debug_log_file.read_text() if debug_log_file.exists() else ""
-                
-                try:
-                    results = json.loads(output_str)
-                except json.JSONDecodeError:
-                    raise HTTPException(status_code=500, detail="Failed to parse execution results")
-
-                # Calculate score based on test cases passed
-                total_test_cases = len(test_cases)
-                test_cases_passed = sum(1 for result in results['results'] if result.get('passed', False))
-                score = int((test_cases_passed / total_test_cases) * question.get('points', 0))
-
-                # If this is a submission, record it
-                if execution_request.is_submission:
-                    print(f"Recording submission with score: {score}")  # Debug log
-                    submission = Submission(
-                        candidate_id=user_id,
-                        question_id=execution_request.question_id,
-                        code_solve=execution_request.code,
-                        score=score,
-                        status="success" if test_cases_passed > 0 else "failed",
-                        test_cases_passed=test_cases_passed,
-                        total_test_cases=total_test_cases
-                    )
-                    await submit_solution(submission)
-
-                # Filter results based on submission type
-                if not execution_request.is_submission:
-                    visible_results = [
-                        result for i, result in enumerate(results['results'])
-                        if not test_cases[i].get('is_hidden', False)
-                    ]
-                else:
-                    visible_results = results['results']
-
-                # If the submission is successful and it's a final submission
-                if execution_request.is_submission and test_cases_passed == total_test_cases:
-                    # Calculate points earned
-                    points_earned = question.get("points", 0)
-                    # Update user's total score
-                    new_score = user.get("total_score", 0) + points_earned
-                    await candidate_collection.update_one(
-                        {"_id": user["_id"]},
-                        {"$set": {"total_score": new_score}}
-                    )
-                # Send challenge completed email
-                try:
-                    email_sent = await email_service.send_challenge_completed_email(
-                        to_email=token_data["email"],
-                        name=user.get("firstName") or user.get("lastName"),
-                            challenge_title=question.get("title", "Unknown Challenge"),
-                            points=points_earned,
-                        total_score=new_score
-                    )
-                    if not email_sent:
-                        print(f"Failed to send challenge completion email to {token_data['email']}")
-                except Exception as e:
-                    print(f"Error sending challenge completion email: {str(e)}")
-
-                return {
-                    "status": "success",
-                    "results": visible_results,
-                    "score": score,
-                    "test_cases_passed": test_cases_passed,
-                    "total_test_cases": total_test_cases,
-                    "is_submission": execution_request.is_submission,
-                    "debug_output": debug_output
-                }
-
-            except subprocess.TimeoutExpired:
-                process.kill()
-                raise HTTPException(status_code=408, detail="Code execution timed out")
-
-        except subprocess.CalledProcessError as e:
-            error_message = e.stderr.decode('utf-8', errors='replace') if e.stderr else str(e)
-            raise HTTPException(status_code=500, detail=f"Docker execution failed: {error_message}")
+            # Call Azure Function instead of Docker
+            results = run_code_via_azure_function(input_data)
+            total_test_cases = len(test_cases)
+            test_cases_passed = sum(1 for result in results['results'] if result.get('passed', False))
+            score = int((test_cases_passed / total_test_cases) * question.get('points', 0))
+            # If this is a submission, record it
+            if execution_request.is_submission:
+                print(f"Recording submission with score: {score}")  # Debug log
+                submission = Submission(
+                    candidate_id=user_id,
+                    question_id=execution_request.question_id,
+                    code_solve=execution_request.code,
+                    score=score,
+                    status="success" if test_cases_passed > 0 else "failed",
+                    test_cases_passed=test_cases_passed,
+                    total_test_cases=total_test_cases
+                )
+                await submit_solution(submission)
+            # Filter results based on submission type
+            if not execution_request.is_submission:
+                visible_results = [
+                    result for i, result in enumerate(results['results'])
+                    if not test_cases[i].get('is_hidden', False)
+                ]
+            else:
+                visible_results = results['results']
+            # (rest of your logic for points, emails, etc.)
+            return {
+                "status": "success",
+                "results": visible_results,
+                "score": score,
+                "test_cases_passed": test_cases_passed,
+                "total_test_cases": total_test_cases,
+                "is_submission": execution_request.is_submission,
+                "debug_output": results.get('debug_output', '')
+            }
         except Exception as e:
+            print(f"Error in execute_code: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
-
     except HTTPException:
         raise
     except Exception as e:

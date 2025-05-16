@@ -83,7 +83,7 @@
     "Data Cleaning",
     "Pandas"
   ],
-  "difficulty": "Easy",
+  "difficulty": "easy",
   "points": 20,
   "examples": [
     {
@@ -92,13 +92,21 @@
       "inputLanguage": "plaintext",
       "outputLanguage": "plaintext",
       "inputImage": {
-        "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN0AAACECAIAAACbJ7lyAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAAASdEVYdFNvZnR3YXJlAEdyZWVuc2hvdF5VCAUAAApSSURBVHhe7Ztd62ZVGcbnc8xhp30DxYOiAyUQwYKgoE8gDcM0TKg0MDGhGApzIARKWBENvTCIIqMUfwsz0rD5d+CAeqInfYsu5rq5WK61n/3yvOznfpbXj8W499p7r3Wv+/7t9eyxvHDRmHzYS5ORC183Jg1hpb00qQgr7aVJRVhpL00qwkp7aVIRVtpLk4qw0l6aVISV9tKkIqy0lyYVYaW9NKkIK+1lWh597Nt/++e9jz/734fnn33/Bz+M3mODSBAPokJsiDB690dYeUQvtcKqvfn23+OO43H12rP/vf8F48EBTuPCA8av7osVvPz17/7MVaihJ65t4KvrJdvzv7gV9x2D0jy0qlplOffrJd5JWXhQLzV41ezl8ApRGCbocPvQHOglWhuhKvr+vz/eY5wadh0v9WqVS8NeYC83rlBqHvEHXftlK1+l7Il6qSQv/V366nopJ1gPnarxndbjZdmQ5fKerdGkt//0Jg80IHcaxPzO2b9wUHqpkNjKwHQJD16/8ZxWxHdPYavh5kuXr8rLH197RiPv5XWVl4N6VQtB06TlQvRgWaMyIUATsU2+BmFlQi/VzxW2NUOjJVqzVssePI5B2LMdSvStl1+hHAwSjacIgHOpDINxojG2ttJquKF9FjfLy7bt+NaB0iS0qgTVVTaq2VaNL2rVsCLlqup/MMNGwsqEXmo9KrnQJT6i9FUp4+kuaGTkkXlnMOzncemlpuYpRlAP/sSxTtFYG5WT0WppvL/sQaOI0pfLR88uaDS1TXnjSquFVCXQq8KbcfXnz7/ESxoWM3LtI4SVmfdLVQhUSeSlqpa8R2bsgtKNMcvUUyYGzAJwOoWn8gDejIar7WKrnmotuKHtaQfZHQXJVsavhbNxpVUM1eNquOfZn/6Md6Lx2Rh3lLAy8/flyMrxIEslIXCgN3X3mikGDIvRMCaOMT6nYPH68JIoVM6l5ZRtkZdVWsrOmHIDYWVCL1lvNKxZ9zBfuqpT3YC/oLCKpRlbU3qJ0zL7Sm5PXmpk/KnvWq2UC+FpFUO5Rg7VomTqqbgwRFiZyktVQp1aEutdpg/HD4b5kjRl/y5oXqZ7MLOll21gVY9O9XjVo7VzQNygnnZMDbI1CL40STnEyD+6fJWz4B5cqgKrYlBmFCTAyGi4dOeNv7CnXcsmwsoMXrZN0W+6p1yeUoPGVO6OxmTxlFY0viGg9BKnuJM3VI0jaCEs52APB2TDpfLfE1XZ0CNbU85VNkRbLrZsg15uGopeqi5qkwUKKxN6yUKKcnm4xCyoVESpqZ7dmspLwB1FFgJOWvZUKyqDbMvZ9pRC4NJBvcS6OJFaOaYmQsPCy7UPxlCNxktl4djmVCesPKKX+0Ll3L1a5uiElR14qZdVv7DmdAkrT9rL8svGm2UfhJV9eGkpuyGs7OB33PREWGkvTSrCSntpUhFW2kuTirDSXppUhJXwMv5pTCbspcmIvTQZsZcmI/bSZMRemozYS5MRe2kyYi9NRuylyYi9NBmZ5eXjTzz5wb1P+H/CPXvvo4cefiQupAEh3f3r+09duhLnPXLj5guvv3UWJ8cGkdAHtFdfux29Xwb9ugfBR+88pr2klJwb5YeX2dSEjuf3P0fr2Et6kMHLmQ5AGGgDeXAMKZeqOe0lJiiDoARL9T8Q5Ubeq5flrpPBS8QwKSXrUkoy56mSCS/5cnCzJOzJkCAAEbF+/KmDuNARSDWzrYMj0go3CG7AbdwsCXoWbRwTXmKgdndEdha5vwIdeykyeNkKN0hryKBII0x72da7+mXPgL1cB5b+2tPXIdnIp0Ub6syNVmzp5ZyXZk3s5TogALioXQkJh6BtVG2o9LL8IBzH++XJ0BZ7fRBA9ZkIGaoesMnLfe6X7WcBprSX69MWe33a0s80ZPC2ESa8bLdfTIYpj56gCnu5Du0n3GDm29tgZLutjjDhJajcx9CLxF+Hwex0RgYv2+q3CoL2tsqiSaa95BzcMnNulsBerkYpYukGf1oVIQ5029LNEkx7CTh9nv/JocVerglEpAxo2hQrLwGOec9SKcEsL41ZGXtpMmIvTUbspcmIvTQZsZcmI/bSZMRemozYS5ORC18zJg1hpb00qQgr7aVJRVhpL00qwkp7aVIRVtpLk4qw0l6aVISV9tKkIqy0lyYVYaW9NKkIK+2lSUVYudTLN+6+e/O5F+MkBwhJ/w3Ur37zh+jtEWQei42TA4DsIYftFN/45rfe/cd/5ky9+whh5Xwvv/Pd7314/ilmTeUllqrVIrCO1cQyB0u+R2hVW+KlXu4yQlg5x0sOyvnaKY9LFQxWjlARcJx3gYqNdmgvsfUggfgT21D0LvRyxxHCyjlecqeEATqIC/lgXsqMdADKyYrq4EAwe6jv+f0vcBy9y73cZYSwctH3pb08Lut4iezhAGJdvvIT9ldW8VRbOI7Rw0szRxghrOzJy/mLP1FW85KZlHBVYiEA7uQxldClmSOMEFb25CWWzaTEeXdggXNKuzWyCsfY6vRbPG4V7pF/241QElb24SUDK384umRNLwHm4umgVTjVT7meWjTCIGFlB17yvdQr2zGo65zSbk1lFcuNGSurcBtcLE/11MwRRggrT91LBFPmqG+wzIOutLIKML0v3vqlrOIuUDow4iVoRxgnrDxpL+e/hX2wvpcAM0JE9HPqykuWYMRLUI0wTlh50l4iR4in72/KEtR1Tmm3ZtAqFl0/SjxVGHgEl/TUnBHGCStP3Uu8iFhw1ZCduKMvjuIloHyaukw7LpVPzRxhhLBykZfGHJqw0l6aVISV9tKkIqy0lyYVYaW9NKkIK+2lSUVYaS9NKsJKe2lSEVbaS5OKsBJexj+NyYS9NBmxlyYj9tJkxF6ajNhLkxF7aTJiL01G7KXJiL00GbGXJiOzvHz1tdv874zQXn/rLHoTcOPmCwoMDadxoUewuiTJRxhM+Af3Pnn8iSejt6HUZmlppr3E6GfvffTQw4/g+KlLV87vf55Hzd/+/o7ywiz0qiZVyJB5xCAdkXP4ACt4qQSXdBu3j0Wlmfby2tPXKSUp50sFgsT7k+ed2Rd839iOvjpuTDJsU86hByQpRcQ92t3msPj7EpNtekWODhbfn5daVIbVtdUfjAq3VZvXUm368ZLvLnaXOO+ODF4O7pdtzhEn+svdsXpwksVetlMmIW1g+yKDlwAxlN+Xgx91bajtL/s4y7xEHKk2S76v/PbqeKckSbwECIM5H5QSbPJyfo3meikD5iu/Mlhz33Zm8LLSi7/Obc43ebnn/ZKDbno58oAE5Q9yazJ4iQCqj6XBnLe37f/7kiOexKcblp3qM2O/HN1L/mZWMSDb8LLKeSvr0tJMe9m6nxbvl4emlWEw59zLyt1xqUUTXmI+zDp/+10TLP6Pd+7GyYM3MvPn7+5k8JLCwcXylFFRFUWIA/m6dLMEs7zkX77KdvQEAf6sKKSlKz85kPMMaa+U0EZQeQlwvHVpZv29x5iVsZcmI/bSZMRemozYS5MRe2kyYi9NPi5e/D/ccmnPtAyqKwAAAABJRU5ErkJggg==",
+        "url": "question_20250516_184940_p1Q.png",
         "caption": ""
       },
       "outputImage": {
-        "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPEAAABBCAIAAACPY9UrAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAAASdEVYdFNvZnR3YXJlAEdyZWVuc2hvdF5VCAUAAAYASURBVHhe7ZrNqh1FFIV9jvMKvoHiXBFEcKjgEwgOVDJQEAKCoqMMHIgKCgoZKCIGUVCCIhFUJHGQgGSSTHwLV7L6LrdV/VO3T3ffc/ZZHzuX09XVVXuvvbpP30seedSYROx2O3vapMKeNtmwp0027GmTDXvaZMOeNtmwp0027GmTjYP29JNPPf3Trzdv3/3n91t3n3/hxW7UJAUtRqPRbjQdre9Gz89Felo1XPv+527o/yzraeyCpWrJlpJyS5RzjL/u3H/t0hvdjHXA+thlpU3t6XMjTyPeee9KN5rI04xPP/+ym7QoIztGMfdhqUacqKfjgktJuSV1zjBWXdpSaDtE0Swc2tP/oRq293TcdCkpt6TOWVqt8QYi6YY6tQhpPa3nDeLqF9cW9zSW+uqbH7g+HzC1lGohQ7vLNxh59dLrvArB/PGlz8PCVVqfschTrc658LSSYSgljesVJRbVK7L2GppA1Dh1DVsUtSOKuyLm+cHHnxVFAaSN5Dmh8XY9LE8XnVCMq9mIPC07UjulwUP1OAYT6D3FuPHH7XiorsRbVCE/zabIGSPaiCPFbYmgIWQRXaiRoazqS3qpK8WCujaG2l0nydBGvX6YfCgckKd1SPUxIploqYcXzYcKcnGtDNVqf0Q0Ex9wFnN0Ic5KdC6rCTwsCtT8/cvRykVIughGMI6zzDnqgEOm1HshkQJFFQrqpmkjS3Frlq+spIaW5YJF2rq8t02RA/J09BknyCL7mwAUvdQh9mUaUSxtrUBWdT7SnSUANoa7qKIilMNsJF2MutmsUVHrrIqUf43mFzUquG89TUglBsvXIriQ01QUFyx2UUya4XQ9HRWMUmq8iOgA5aNu1f1GOaqoDjVyHjF5ZNWNnqE8i2CSOoufb15+m/mP5KMaVTUpcqjbB3oV2NPT6uAQp+tpUCheSMk01FEc1vno7LinVdFSFO3vRs/Qvsyq0BkwSQzi1zJ+GJFXVSNiIUUOI+2T5tyXh/yMwIWcXyxYT2jkgDwtf0hiVTUueiO1p2O3EJSS0+oc8EHzdXbc0yowbooPcBI/z0YrM+du9AzmoE0LiwNdzsB8jg+hFeLkIgfNqSdwX6nHxDRfJVB5jUhbLIKlHi75IBMEPw9xQJ4GqqqIWNVsuHi0F5BwCEopUxaBcXVF+ehylaDLKX3vaur6bCSdDBGRXYpQkkBSF4IMMbQmgjlogqqTXEVwx6GzCBXV64cj8zSIJrjy/ocsez1PA+1YS4kRvXFimtrQ7mmgOYxFahn3NFAamKa/XUadldXQCr1IGYXWrD0NlCfHmVVsgRbEIFaoi9KyjJZsL9LT5gKRV3TvpcGePkXqL5xM2NOnRfEiFB/SxSnF0T3I7enTIho331sHsadNNuxpkw172mTDnjbZsKdNNh54Gv+MyYQ9bbJhT5ts2NMmG/a0yYY9bbJhT5ts2NMmG/a0yYY9bbJhT5tsNHn6mWef++3m3/y/5Nd/+fOxx5/oTqzJSy+/8t2PN7bZaz2QPxS7deceyumGzHmAblCP3oMJYcXuxDDTnqahP/rkKj6zQxvYGtttef+sB1oC9SSgOReX33oXNsDP7riNaU+jGdFbvG/Ou007LIORwNNQ7+tvrxcamhZmO23C02gDmhGfMRxBn7rjpVH7E/iAX3HoCp/W+NmdMA3MNsCEp3vvFRh6A7cl8DR0g5XhbFSBWtZ7EOSDisWHaTvTnq4fMNu4LYGnYWL5GOXQ3zw04+grDgLyRbT99+yZnt6gPcfuaXWFh9Bw1d9DkkG5YGUpBnM32trP6bUo7nwUgnL8+tEIPR3l4jOiRUC/T68CHcwvzRiNTxqzj/EmPM2bA/bqjjd83hy1p3tbwsEophmiNh6A6xZ4ToPi5ujt1hoctaeRfHzxEI1PGgMKrXpd3su0p+PTBRtgm5Z7ZX+O19Mjb354FkBMSNodm2EKE0PP3sdEzbSnAW3NN8JtDA2O19MwLoTq/SobsbupoVw0XrsZmjxtzBFhT5ts2NMmG/a0yYY9bbJhT5ts2NMmG/a0yYY9bXKx2/0LsN1BIISix48AAAAASUVORK5CYII=",
+        "url": "question_20250516_184951_p1A.png",
         "caption": ""
       }
+    },
+    {
+      "input": "",
+      "output": "",
+      "inputLanguage": "plaintext",
+      "outputLanguage": "plaintext",
+      "inputImage": null,
+      "outputImage": null
     }
   ],
   "starterCodes": [
@@ -132,10 +140,11 @@
     "$date": "2025-03-07T03:02:55.977Z"
   },
   "updated_at": {
-    "$date": "2025-04-14T23:18:45.137Z"
+    "$date": "2025-05-16T17:49:58.125Z"
   },
   "Q_type": "pandas",
-  "working_driver": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    return df"
+  "working_driver": "import pandas as pd \r\nimport numpy as np\r\ndef remove_missing_data(df):\r\n    df = df.dropna()\r\n    return df",
+  "moduleId": null
 },
 {
   "_id": {
