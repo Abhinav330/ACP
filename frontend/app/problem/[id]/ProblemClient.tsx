@@ -386,13 +386,20 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
   // Helper function to ensure image URLs are properly prefixed
   const getImageUrl = (url: string) => {
     if (!url) return '';
-    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    // If it's already a full URL (including Azure Blob Storage URL), return as is
+    if (url.startsWith('http') || url.startsWith('https')) return url;
     
-    // Use environment variable for backend URL
+    // If it's a filename, construct the Azure Blob Storage URL
+    const blobSasUrl = process.env.NEXT_PUBLIC_QUESTION_IMAGE_BLOB_SAS_URL;
+    const blobSasToken = process.env.NEXT_PUBLIC_QUESTION_IMAGE_BLOB_SAS_TOKEN;
+    
+    if (blobSasUrl && blobSasToken) {
+      return `${blobSasUrl}/${url}?${blobSasToken}`;
+    }
+    
+    // Fallback to backend URL if Azure Blob Storage is not configured
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-    const apiPath = '/api/v1'; // Add your API path prefix if needed
-    
-    // Clean and construct the image URL
+    const apiPath = '/api/v1';
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
     return `${backendUrl}${apiPath}/images${cleanUrl}`;
   };

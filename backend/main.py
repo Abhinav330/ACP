@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request, Body
+from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 # from fastapi.security import OAuth2PasswordBearer
@@ -36,13 +36,17 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import asyncio
 from fastapi import APIRouter
-from azure.storage.blob import BlobServiceClient
-import uuid
+from azure.storage.blob import BlobServiceClient, ContentSettings
+import requests
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(dotenv_path="D:\Algo crafters\ACP\backend\.env")
 profile_picture_dir = os.getenv("PROFILE_PICTURE_PATH")
 question_images_dir = os.getenv("QUESTIONS_IMAGE_PATH")
+
+AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+AZURE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER","profile-picture")
+QUESTION_IMAGE_CONTAINER = os.getenv("QUESTION_IMAGE_CONTAINER", "question-images")
 
 # JWT configuration for NextAuth.js compatibility
 JWT_SECRET = os.getenv("NEXTAUTH_SECRET")  # Use the same secret as NextAuth
@@ -80,12 +84,6 @@ modules_collection = db['modules']
 
 # Initialize profile collection
 # profile_collection = db['profiles']
-
-# Add Azure Storage configuration after loading environment variables
-AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-AZURE_CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER", "media")
-blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
-container_client = blob_service_client.get_container_client(AZURE_CONTAINER_NAME)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -549,6 +547,12 @@ async def create_question(question: Question):
                 {'url': img['url'], 'caption': img['caption']} 
                 for img in question_dict['images']
             ]
+            # Store only filenames in the database
+            for img in question_dict['images']:
+                if img['url'].startswith(QUESTION_IMAGE_BLOB_SAS_URL):
+                    # Extract filename from the URL
+                    filename = img['url'].split('/')[-1].split('?')[0]
+                    img['url'] = filename
         result = await questions_collection.insert_one(question_dict)
         if result.inserted_id:
             created_question = await questions_collection.find_one({'_id': result.inserted_id})
@@ -622,6 +626,12 @@ async def update_question(question_id: str, question: Question):
                 {'url': img['url'], 'caption': img['caption']} 
                 for img in question_dict['images']
             ]
+            # Store only filenames in the database
+            for img in question_dict['images']:
+                if img['url'].startswith(QUESTION_IMAGE_BLOB_SAS_URL):
+                    # Extract filename from the URL
+                    filename = img['url'].split('/')[-1].split('?')[0]
+                    img['url'] = filename
         if 'examples' in question_dict:
             for example in question_dict['examples']:
                 example['inputLanguage'] = example.get('inputLanguage', 'plaintext')
@@ -630,6 +640,15 @@ async def update_question(question_id: str, question: Question):
                     example['inputImage'] = None
                 if 'outputImage' not in example:
                     example['outputImage'] = None
+                # Store only filenames for example images
+                if example.get('inputImage') and example['inputImage'].get('url'):
+                    if example['inputImage']['url'].startswith(QUESTION_IMAGE_BLOB_SAS_URL):
+                        filename = example['inputImage']['url'].split('/')[-1].split('?')[0]
+                        example['inputImage']['url'] = filename
+                if example.get('outputImage') and example['outputImage'].get('url'):
+                    if example['outputImage']['url'].startswith(QUESTION_IMAGE_BLOB_SAS_URL):
+                        filename = example['outputImage']['url'].split('/')[-1].split('?')[0]
+                        example['outputImage']['url'] = filename
         if 'testCases' in question_dict:
             for i, test_case in enumerate(question_dict['testCases']):
                 test_case['order'] = i + 1
@@ -646,15 +665,38 @@ async def update_question(question_id: str, question: Question):
         )
         if result.modified_count:
             updated_question = await questions_collection.find_one({'_id': ObjectId(question_id)})
-            if updated_question:
-                return serialize_question(updated_question)
-            else:
-                raise HTTPException(status_code=404, detail="Question not found after update")
+            return serialize_question(updated_question)
         else:
             raise HTTPException(status_code=404, detail="Question not found")
     except Exception as e:
-        print(f"Error updating question: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def serialize_question(question):
+    if not question:
+        return None
+    
+    # Convert ObjectId to string
+    question['_id'] = str(question['_id'])
+    
+    # Convert image filenames to full URLs
+    if 'images' in question:
+        question['images'] = [
+            {
+                'url': get_question_image_url(img['url']),
+                'caption': img['caption']
+            }
+            for img in question['images']
+        ]
+    
+    # Convert example image filenames to full URLs
+    if 'examples' in question:
+        for example in question['examples']:
+            if example.get('inputImage') and example['inputImage'].get('url'):
+                example['inputImage']['url'] = get_question_image_url(example['inputImage']['url'])
+            if example.get('outputImage') and example['outputImage'].get('url'):
+                example['outputImage']['url'] = get_question_image_url(example['outputImage']['url'])
+    
+    return question
 
 @app.delete("/api/questions/{question_id}", dependencies=[Depends(require_admin)])
 async def delete_question(question_id: str):
@@ -925,28 +967,120 @@ async def execute_code(execution_request: CodeExecutionRequest, authorization: s
 @app.post("/api/upload-image", dependencies=[Depends(require_admin)])
 async def upload_image(file: UploadFile = File(...)):
     try:
-        # Generate a unique filename
-        unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
-        blob_client = container_client.get_blob_client(unique_filename)
-        data = await file.read()
-        blob_client.upload_blob(data, overwrite=True)
-        url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/{unique_filename}"
-        return {"message": "Image uploaded", "url": url, "filename": unique_filename}
+        # Create a unique filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        
+        # Save to the images directory
+        file_path = IMAGES_DIR / filename
+        
+        # Write the file
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Return the relative URL path that can be used to access the image
+        return {
+            "url": f"/api/v1/images/{filename}",
+            "filename": filename
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
+container_client = blob_service_client.get_container_client(AZURE_CONTAINER)
+question_image_container_client = blob_service_client.get_container_client(QUESTION_IMAGE_CONTAINER)
+
+BLOB_SAS_URL = os.getenv("BLOB_SAS_URL")
+BLOB_SAS_TOKEN = os.getenv("BLOB_SAS_TOKEN")
+QUESTION_IMAGE_BLOB_SAS_URL = os.getenv("QUESTION_IMAGE_BLOB_SAS_URL")
+QUESTION_IMAGE_BLOB_SAS_TOKEN = os.getenv("QUESTION_IMAGE_BLOB_SAS_TOKEN")
+
+def get_profile_picture_url(filename: str) -> str:
+    new_file= ""
+
+    # If it's already a full URL
+    if filename.startswith("http") or filename.startswith("https"):
+        if "?" in filename:
+            return filename
+        else:
+            return f"{filename}?{BLOB_SAS_TOKEN}"
+    else:
+        new_file = f"{BLOB_SAS_URL}/{filename}?{BLOB_SAS_TOKEN}"
+        print("new_file", new_file)
+        return new_file
+
+def get_question_image_url(filename: str) -> str:
+    if not filename:
+        return ""
+    
+    # If it's already a full URL
+    if filename.startswith("http") or filename.startswith("https"):
+        if "?" in filename:
+            return filename
+        else:
+            return f"{filename}?{QUESTION_IMAGE_BLOB_SAS_TOKEN}"
+    else:
+        return f"{QUESTION_IMAGE_BLOB_SAS_URL}/{filename}?{QUESTION_IMAGE_BLOB_SAS_TOKEN}"
+
 @app.post("/api/upload-profile-picture", dependencies=[Depends(require_user)])
-async def upload_profile_picture(file: UploadFile = File(...)):
+async def upload_profile_picture(file: UploadFile = File(...), authorization: str = Header(None)):
     try:
-        # Generate a unique filename
-        unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
-        blob_client = container_client.get_blob_client(unique_filename)
+        token_data = await verify_token(authorization)
+        user_id = str(token_data["sub"])
+        ext = os.path.splitext(file.filename)[1]
+        filename = f"profile_{user_id}{ext}"
+        blob_client = container_client.get_blob_client(filename)
         data = await file.read()
-        blob_client.upload_blob(data, overwrite=True)
-        url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/{unique_filename}"
-        return {"url": url, "filename": unique_filename}
+        content_type = file.content_type or "image/png"
+        blob_client.upload_blob(
+            data,
+            overwrite=True,
+            content_settings=ContentSettings(content_type=content_type)
+        )
+        # Store only the filename in the database
+        await profile_collection.update_one({"user_id": user_id}, {"$set": {"profile_picture": filename}})
+        url = get_profile_picture_url(filename)
+        return {"url": url, "filename": filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/private-profile")
+async def get_private_profile(authorization: str = Header(None)):
+    token_data = await verify_token(authorization)
+    user_id = str(token_data["sub"])
+    profile = await profile_collection.find_one({"user_id": user_id})
+    if not profile:
+        # Auto-create default profile if missing
+        await update_user_profile_stats(user_id)
+        profile = await profile_collection.find_one({"user_id": user_id})
+    if profile and "_id" in profile:
+        profile["_id"] = str(profile["_id"])
+    # Patch: Add top-level linkedin_url and website_url from social_links
+    social_links = profile.get("social_links", {})
+    profile["linkedin_url"] = social_links.get("linkedin", "")
+    profile["website_url"] = social_links.get("portfolio", "")
+    # Always return a SAS URL for the profile picture
+    if profile.get("profile_picture"):
+        profile["profile_picture"] = get_profile_picture_url(profile["profile_picture"])
+        
+    else:
+        profile["profile_picture"] = get_profile_picture_url("default-avatar.png")
+    # Calculate top_percentage
+    try:
+        all_profiles = await profile_collection.find({}, {"total_score": 1, "user_id": 1}).to_list(length=None)
+        scores = sorted([p.get("total_score", 0) for p in all_profiles], reverse=True)
+        user_score = profile.get("total_score", 0)
+        user_rank = scores.index(user_score) + 1 if user_score in scores else len(scores)
+        total_users = len(scores)
+        top_percentage = round((user_rank / total_users) * 100, 2) if total_users > 0 else 100.0
+        profile["top_percentage"] = bucket_top_percentage(top_percentage)
+    except Exception as e:
+        profile["top_percentage"] = "Top 100%"
+    # Always include module_percentiles
+    profile["module_percentiles"] = profile.get("module_percentiles", {})
+    print("Profile picture SAS URL:", profile["profile_picture"])
+    return profile
 
 # Add these models after other models
 class QuestionCollection(BaseModel):
@@ -1722,11 +1856,16 @@ async def update_private_profile(
         contribution_data = await submissions_collection.aggregate(pipeline).to_list(length=None)
 
         # Prepare profile document
+        profile_picture_value = profile_update.get("profile_picture")
+        if profile_picture_value:
+            # If it's a URL, extract the filename only (no query, no slashes)
+            if isinstance(profile_picture_value, str) and (profile_picture_value.startswith("http") or profile_picture_value.startswith("https")):
+                profile_picture_value = profile_picture_value.split("/")[-1].split("?")[0]
         profile_data = {
             "user_id": user_id,
             "username": profile_update.get("user_name") or f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
             "email": user.get("email"),
-            **({"profile_picture": profile_update["profile_picture"]} if profile_update.get("profile_picture") else {}),
+            **({"profile_picture": profile_picture_value} if profile_picture_value else {}),
             "bio": profile_update.get("bio") or user.get("bio") or "Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.",
             "phone": user.get("phone"),
             "company": user.get("company"),
@@ -1892,38 +2031,6 @@ async def update_user_module_percentiles(user_id: str):
         {"$set": {"module_percentiles": module_percentiles}}
     )
 
-@app.get("/api/private-profile", dependencies=[Depends(require_user)])
-async def get_private_profile(authorization: str = Header(None)):
-    token_data = await verify_token(authorization)
-    user_id = str(token_data["sub"])
-    profile = await profile_collection.find_one({"user_id": user_id})
-    if not profile:
-        # Auto-create default profile if missing
-        await update_user_profile_stats(user_id)
-        profile = await profile_collection.find_one({"user_id": user_id})
-    if profile and "_id" in profile:
-        profile["_id"] = str(profile["_id"])
-    # Patch: Add top-level linkedin_url and website_url from social_links
-    social_links = profile.get("social_links", {})
-    profile["linkedin_url"] = social_links.get("linkedin", "")
-    profile["website_url"] = social_links.get("portfolio", "")
-
-    # Calculate top_percentage
-    try:
-        all_profiles = await profile_collection.find({}, {"total_score": 1, "user_id": 1}).to_list(length=None)
-        scores = sorted([p.get("total_score", 0) for p in all_profiles], reverse=True)
-        user_score = profile.get("total_score", 0)
-        user_rank = scores.index(user_score) + 1 if user_score in scores else len(scores)
-        total_users = len(scores)
-        top_percentage = round((user_rank / total_users) * 100, 2) if total_users > 0 else 100.0
-        profile["top_percentage"] = bucket_top_percentage(top_percentage)
-    except Exception as e:
-        profile["top_percentage"] = "Top 100%"
-    # After fetching profile ...
-    profile["module_percentiles"] = profile.get("module_percentiles", {})
-
-    return profile
-
 @app.get("/api/admin/modules", dependencies=[Depends(require_admin)])
 async def list_modules():
     modules = await modules_collection.find({}).to_list(length=None)
@@ -1977,6 +2084,45 @@ async def get_admin_question(question_id: str):
         return serialize_question(question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/upload-question-image", dependencies=[Depends(require_admin)])
+async def upload_question_image(file: UploadFile = File(...)):
+    try:
+        # Create a unique filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"question_{timestamp}_{file.filename}"
+        
+        # Upload to Azure Blob Storage
+        blob_client = question_image_container_client.get_blob_client(filename)
+        data = await file.read()
+        content_type = file.content_type or "image/png"
+        blob_client.upload_blob(
+            data,
+            overwrite=True,
+            content_settings=ContentSettings(content_type=content_type)
+        )
+        
+        # Return the filename and URL
+        url = get_question_image_url(filename)
+        return {"url": url, "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/question-image/{filename}")
+async def get_question_image(filename: str):
+    url = f"{QUESTION_IMAGE_BLOB_SAS_URL}/{filename}?{QUESTION_IMAGE_BLOB_SAS_TOKEN}"
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=404, detail="Image not found")
+    # Guess content type from filename
+    content_type = "image/png"
+    if filename.lower().endswith(".jpg") or filename.lower().endswith(".jpeg"):
+        content_type = "image/jpeg"
+    elif filename.lower().endswith(".gif"):
+        content_type = "image/gif"
+    elif filename.lower().endswith(".webp"):
+        content_type = "image/webp"
+    return Response(content=resp.content, media_type=content_type)
 
 # Uvicorn configuration
 if __name__ == "__main__":

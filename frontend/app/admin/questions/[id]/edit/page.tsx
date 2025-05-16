@@ -86,6 +86,7 @@ interface FormData {
   docker_runner: string;
   working_driver: string;
   Q_type: string;
+  images?: { url: string; caption: string; }[];
 }
 
 const initialFormState: FormData = {
@@ -128,6 +129,20 @@ const moduleTypes = [
   { value: "ai", label: "AI/ML" },
 ];
 
+const getBackendQuestionImageUrl = (filename: string) => {
+  if (!filename) return '';
+  return `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/question-image/${filename}`;
+};
+
+const extractFilename = (url: string) => {
+  if (!url) return '';
+  if (url.startsWith('http')) {
+    const parts = url.split('/');
+    return parts[parts.length - 1].split('?')[0];
+  }
+  return url;
+};
+
 export default function EditQuestion() {
   const router = useRouter();
   const params = useParams();
@@ -150,15 +165,22 @@ export default function EditQuestion() {
     setIsLoading(true);
     setError("");
     apiRequest(`/api/admin/questions/${id}`, { method: "GET" })
-      .then((data) => {
+      .then((data: any) => {
         setFormData({
-          title: data.title,
-          summary: data.summary,
-          description: data.description,
-          category: data.category || [],
-          difficulty: data.difficulty,
-          points: data.points,
-          examples: data.examples && data.examples.length > 0 ? data.examples : initialFormState.examples,
+          ...data,
+          images: (data.images || []).map((img: any) => ({
+            ...img,
+            url: extractFilename(img.url)
+          })),
+          examples: (data.examples || []).map((ex: any) => ({
+            ...ex,
+            inputImage: ex.inputImage
+              ? { ...ex.inputImage, url: extractFilename(ex.inputImage.url) }
+              : null,
+            outputImage: ex.outputImage
+              ? { ...ex.outputImage, url: extractFilename(ex.outputImage.url) }
+              : null,
+          })),
           starterCodes: data.starterCodes || [],
           allowedLanguages: data.allowedLanguages || ["python"],
           testCases: data.testCases && data.testCases.length > 0 ? data.testCases : initialFormState.testCases,
@@ -300,6 +322,9 @@ export default function EditQuestion() {
   if (!session || !session.user.is_admin) {
     return null;
   }
+
+  const token = session?.user?.token;
+  const email = session?.user?.email;
 
   return (
     <div className={styles.container}>
@@ -455,7 +480,7 @@ export default function EditQuestion() {
                   {/* Image upload and preview for inputImage */}
                   {example.inputImage ? (
                     <div className={styles.exampleImagePreview}>
-                      <img src={example.inputImage.url} alt="Input Example" />
+                      <img src={getBackendQuestionImageUrl(example.inputImage.url)} alt="Input Example" />
                       <input
                         className={styles.input}
                         type="text"
@@ -464,7 +489,11 @@ export default function EditQuestion() {
                           const caption = e.target.value;
                           setFormData(prev => ({
                             ...prev,
-                            examples: prev.examples.map((ex, i) => i === idx ? { ...ex, inputImage: { ...ex.inputImage!, caption } } : ex)
+                            examples: prev.examples.map((ex, i) =>
+                              i === idx
+                                ? { ...ex, inputImage: { ...ex.inputImage!, caption } }
+                                : ex
+                            )
                           }));
                         }}
                         placeholder="Caption"
@@ -472,7 +501,11 @@ export default function EditQuestion() {
                       <button type="button" className={styles.removeImageButton} onClick={() => {
                         setFormData(prev => ({
                           ...prev,
-                          examples: prev.examples.map((ex, i) => i === idx ? { ...ex, inputImage: null } : ex)
+                          examples: prev.examples.map((ex, i) =>
+                            i === idx
+                              ? { ...ex, inputImage: null }
+                              : ex
+                          )
                         }));
                       }}>Remove</button>
                     </div>
@@ -484,11 +517,35 @@ export default function EditQuestion() {
                       onChange={e => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          const url = URL.createObjectURL(file);
-                          setFormData(prev => ({
-                            ...prev,
-                            examples: prev.examples.map((ex, i) => i === idx ? { ...ex, inputImage: { url, caption: "" } } : ex)
-                          }));
+                          // Create FormData for file upload
+                          const formData = new FormData();
+                          formData.append('file', file);
+
+                          // Upload to Azure Blob Storage
+                          console.log('Uploading to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-question-image`);
+                          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-question-image`, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                              ...(email ? { 'email': email } : {}),
+                            },
+                          })
+                          .then(response => response.json())
+                          .then(data => {
+                            setFormData(prev => ({
+                              ...prev,
+                              examples: prev.examples.map((ex, i) =>
+                                i === idx
+                                  ? { ...ex, inputImage: { url: data.filename, caption: "" } }
+                                  : ex
+                              )
+                            }));
+                          })
+                          .catch(error => {
+                            console.error('Error uploading image:', error);
+                            alert('Failed to upload image. Please try again.');
+                          });
                         }
                       }}
                     />
@@ -520,7 +577,7 @@ export default function EditQuestion() {
                   {/* Image upload and preview for outputImage */}
                   {example.outputImage ? (
                     <div className={styles.exampleImagePreview}>
-                      <img src={example.outputImage.url} alt="Output Example" />
+                      <img src={getBackendQuestionImageUrl(example.outputImage.url)} alt="Output Example" />
                       <input
                         className={styles.input}
                         type="text"
@@ -529,7 +586,11 @@ export default function EditQuestion() {
                           const caption = e.target.value;
                           setFormData(prev => ({
                             ...prev,
-                            examples: prev.examples.map((ex, i) => i === idx ? { ...ex, outputImage: { ...ex.outputImage!, caption } } : ex)
+                            examples: prev.examples.map((ex, i) =>
+                              i === idx
+                                ? { ...ex, outputImage: { ...ex.outputImage!, caption } }
+                                : ex
+                            )
                           }));
                         }}
                         placeholder="Caption"
@@ -537,7 +598,11 @@ export default function EditQuestion() {
                       <button type="button" className={styles.removeImageButton} onClick={() => {
                         setFormData(prev => ({
                           ...prev,
-                          examples: prev.examples.map((ex, i) => i === idx ? { ...ex, outputImage: null } : ex)
+                          examples: prev.examples.map((ex, i) =>
+                            i === idx
+                              ? { ...ex, outputImage: null }
+                              : ex
+                          )
                         }));
                       }}>Remove</button>
                     </div>
@@ -549,11 +614,35 @@ export default function EditQuestion() {
                       onChange={e => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          const url = URL.createObjectURL(file);
-                          setFormData(prev => ({
-                            ...prev,
-                            examples: prev.examples.map((ex, i) => i === idx ? { ...ex, outputImage: { url, caption: "" } } : ex)
-                          }));
+                          // Create FormData for file upload
+                          const formData = new FormData();
+                          formData.append('file', file);
+
+                          // Upload to Azure Blob Storage
+                          console.log('Uploading to:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-question-image`);
+                          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-question-image`, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                              ...(email ? { 'email': email } : {}),
+                            },
+                          })
+                          .then(response => response.json())
+                          .then(data => {
+                            setFormData(prev => ({
+                              ...prev,
+                              examples: prev.examples.map((ex, i) =>
+                                i === idx
+                                  ? { ...ex, outputImage: { url: data.filename, caption: "" } }
+                                  : ex
+                              )
+                            }));
+                          })
+                          .catch(error => {
+                            console.error('Error uploading image:', error);
+                            alert('Failed to upload image. Please try again.');
+                          });
                         }
                       }}
                     />
@@ -717,6 +806,51 @@ export default function EditQuestion() {
                 <option key={type.value} value={type.value}>{type.label}</option>
               ))}
             </select>
+          </div>
+
+          <div className={styles.imageUploadSection}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Question Images</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={async (e) => {
+                  const files = e.target.files;
+                  if (files) {
+                    for (let i = 0; i < files.length; i++) {
+                      const file = files[i];
+                      const formData = new FormData();
+                      formData.append('file', file);
+
+                      try {
+                        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/upload-question-image`, {
+                          method: 'POST',
+                          body: formData,
+                          headers: {
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                            ...(email ? { 'email': email } : {}),
+                          },
+                        });
+                        const data = await response.json();
+                        
+                        setFormData(prev => ({
+                          ...prev,
+                          images: [
+                            ...(prev.images || []),
+                            { url: data.filename, caption: '' }
+                          ]
+                        }));
+                      } catch (error) {
+                        console.error('Error uploading image:', error);
+                        alert('Failed to upload image. Please try again.');
+                      }
+                    }
+                  }
+                }}
+                className={styles.input}
+              />
+            </div>
           </div>
 
           <div className={styles.formGroup}>

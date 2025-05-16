@@ -91,12 +91,21 @@ const Header: React.FC = () => {
             <div className={styles.userInfo}>
               <Link href="/profile/private" className={styles.avatarLink}>
                 <Image
-                  src={user?.profile_picture ? `${process.env.NEXT_PUBLIC_API_URL}${user.profile_picture}` : '/default-avatar.png'}
+                  src={user && user.profile_picture ? user.profile_picture : ''}
                   alt={user?.name && user.name.trim() !== '' ? user.name : 'User profile picture'}
                   width={40}
                   height={40}
-                  className={styles.avatar}
-                  style={{ borderRadius: '50%', objectFit: 'cover', marginRight: '0.5rem', cursor: 'pointer' }}
+                  className={styles.profileAvatar}
+                  style={{
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '2px solid #e2e8f0',
+                    background: '#f1f5f9',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    aspectRatio: '1/1',
+                    overflow: 'hidden'
+                  }}
+                  unoptimized
                 />
               </Link>
               <span className={styles.userName}>

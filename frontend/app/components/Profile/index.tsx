@@ -133,6 +133,7 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
 
         if (!response.ok) throw new Error('Failed to fetch profile');
         const data = await response.json();
+        console.log('Profile picture URL:', data.profile_picture);
         setProfile({
           ...data,
           achievements: Array.isArray(data.achievements) ? data.achievements : [],
@@ -279,17 +280,14 @@ export default function Profile({ userId, isPrivate = false, onEdit, onChangePas
         <div className={styles.profileHeader}>
           <div className={styles.profilePictureSection}>
             <div className={styles.profilePictureContainer}>
-              {profile.profile_picture ? (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_API_URL}${profile.profile_picture}`}
+                src={profile.profile_picture || ''}
                   alt={profile?.user_name && profile.user_name.trim() !== '' ? profile.user_name : 'Profile picture'}
                   width={150}
                   height={150}
                   className={styles.profilePicture}
+                unoptimized
                 />
-              ) : (
-                <FaUserCircle className={styles.profilePicturePlaceholder} />
-              )}
             </div>
             {isPrivate && (
               <label className={styles.uploadButton}>

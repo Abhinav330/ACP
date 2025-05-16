@@ -7,7 +7,10 @@ const nextConfig = {
   serverExternalPackages: [],
   // Configure image domains
   images: {
-    domains: ['localhost'],
+    domains: [
+      'algocraftersstoragev1.blob.core.windows.net',
+      // add other domains if needed
+    ],
   },
   // Disable webpack 5 persistent caching in development
   webpack: (config, { dev, isServer }) => {

@@ -39,7 +39,11 @@ export default function ProfileHeader({
             <div className={styles.pictureDisplay}>
               {profilePicture ? (
                 <img
-                  src={profilePicture}
+                  src={
+                    profilePicture.startsWith('http')
+                      ? profilePicture
+                      : `${process.env.NEXT_PUBLIC_API_URL}${profilePicture}`
+                  }
                   alt={userName}
                   className={styles.image}
                 />
