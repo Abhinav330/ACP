@@ -186,6 +186,7 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
   const [resultHeight, setResultHeight] = useState<number>(0);
   const editorPanelRef = useRef<HTMLDivElement>(null);
   const [editorWidth, setEditorWidth] = useState<number | undefined>(undefined);
+  const hasUserTyped = useRef(false);
 
   // Available themes in Monaco Editor
   const themes = [
@@ -210,19 +211,161 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
     ai: { id: 'ai', name: 'AI' },
   };
 
-  const getStorageKey = (qid: string, lang: string) => `monaco-code-${qid}-${lang}`;
+  // Function to get localStorage key for current question and language
+  const getStorageKey = useCallback((qid: string, lang: string) => {
+    return `code-${qid}-${lang}`;
+  }, []);
 
-  // Load code from localStorage or starter code on question/language change
+  // Function to fetch last successful submission
+  const fetchLastSuccessfulSubmission = async (questionId: string) => {
+    try {
+      console.log('Fetching last successful submission for question:', questionId);
+      const response = await apiRequest(`/api/success-history/${questionId}`, {
+        method: 'GET'
+      });
+      console.log('Last successful submission:', response);
+      return response;
+    } catch (error) {
+      console.error('Error fetching last successful submission:', error);
+      return null;
+    }
+  };
+
+  // Function to load code from localStorage
+  const loadCodeFromStorage = useCallback((questionId: string, lang: string) => {
+    const key = getStorageKey(questionId, lang);
+    const savedCode = localStorage.getItem(key);
+    console.log('Loading code from localStorage:', { key, hasCode: !!savedCode });
+    return savedCode || null;
+  }, [getStorageKey]);
+
+  // Function to save code to localStorage
+  const saveCodeToStorage = useCallback((questionId: string, lang: string, code: string) => {
+    const key = getStorageKey(questionId, lang);
+    console.log('Saving code to localStorage:', { key, codeLength: code.length });
+    localStorage.setItem(key, code);
+  }, [getStorageKey]);
+
+  // Clear localStorage when session changes
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      console.log('Clearing localStorage due to session end');
+      localStorage.clear();
+    }
+  }, [status]);
+
+  // Load question data and initial code
+  useEffect(() => {
+    const checkAuthAndFetchData = async () => {
+      try {
+        if (status === 'unauthenticated') {
+          router.push('/login');
+          return;
+        }
+
+        if (!session?.user?.id) {
+          console.warn('Required user data is not available in session');
+          return;
+        }
+
+        console.log('Fetching question data for ID:', id);
+        const data = await apiRequest(`/api/questions/${id}`, { method: 'GET' });
+        setQuestion(data);
+
+        // Fetch last successful submission
+        const lastSubmission = await fetchLastSuccessfulSubmission(id);
+        
+        // Get saved code from localStorage
+        const savedCode = loadCodeFromStorage(id, language);
+
+        console.log('Code loading priority check:', {
+          hasLastSubmission: !!lastSubmission,
+          hasSavedCode: !!savedCode,
+          currentLanguage: language
+        });
+
+        if (!hasUserTyped.current) {
+          if (lastSubmission) {
+            console.log('Loading last successful submission');
+            setCode(lastSubmission.code_solve);
+          } else if (savedCode) {
+            console.log('Loading saved code from localStorage');
+            setCode(savedCode);
+          } else {
+            console.log('Loading starter code');
+            const starter = data.starterCodes?.find((sc: StarterCode) => sc.language === language)?.code || '';
+            setCode(starter);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching question:', error);
+        setError('Failed to load question. Please try again later.');
+      }
+    };
+
+    if (status === 'authenticated') {
+      checkAuthAndFetchData();
+    }
+  }, [id, router, session, status, language, loadCodeFromStorage]);
+
+  // Save code to localStorage when it changes
+  useEffect(() => {
+    if (question && code) {
+      saveCodeToStorage(question.id, language, code);
+    }
+  }, [code, question, language, saveCodeToStorage]);
+
+  // Handle language change
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLanguage = e.target.value;
+    console.log('Language changed to:', newLanguage);
+    setLanguage(newLanguage);
+    
+    // When language changes, try to load code in this order:
+    // 1. Last successful submission
+    // 2. Saved code from localStorage
+    // 3. Starter code
+    const loadCodeForNewLanguage = async () => {
     if (!question) return;
-    const saved = localStorage.getItem(getStorageKey(question.id, language));
-    if (saved !== null) {
-      setCode(saved);
+
+      console.log('Loading code for new language:', newLanguage);
+      const lastSubmission = await fetchLastSuccessfulSubmission(question.id);
+      const savedCode = loadCodeFromStorage(question.id, newLanguage);
+      
+      console.log('Code loading for new language:', {
+        hasLastSubmission: !!lastSubmission,
+        hasSavedCode: !!savedCode
+      });
+
+      if (lastSubmission) {
+        console.log('Loading last successful submission for new language');
+        setCode(lastSubmission.code_solve);
+      } else if (savedCode) {
+        console.log('Loading saved code from localStorage for new language');
+        setCode(savedCode);
     } else {
-      const starter = question.starterCodes.find((sc: StarterCode) => sc.language === language)?.code || '';
+        console.log('Loading starter code for new language');
+        const starter = question.starterCodes?.find((sc: StarterCode) => sc.language === newLanguage)?.code || '';
       setCode(starter);
     }
-  }, [question, language]);
+    };
+
+    loadCodeForNewLanguage();
+  };
+
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTheme(e.target.value);
+  };
+
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setCode(value);
+      hasUserTyped.current = true;
+      if (question) {
+        saveCodeToStorage(question.id, language, value);
+      }
+    }
+  };
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -251,51 +394,6 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
       window.dispatchEvent(new Event('resize'));
     }
   }, [isResizing]);
-
-  useEffect(() => {
-    const checkAuthAndFetchData = async () => {
-      try {
-        if (status === 'unauthenticated') {
-          router.push('/login');
-          return;
-        }
-
-        if (!session?.user?.id) {
-          console.warn('Required user data is not available in session');
-          return;
-        }
-
-        // Fetch question data using apiRequest
-        const data = await apiRequest(`/api/questions/${id}`, { method: 'GET' });
-        setQuestion(data);
-      } catch (error) {
-        console.error('Error fetching question:', error);
-        setError('Failed to load question. Please try again later.');
-      }
-    };
-
-    if (status === 'authenticated') {
-      checkAuthAndFetchData();
-    }
-  }, [id, router, session, status]);
-
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLanguage = e.target.value;
-    setLanguage(newLanguage);
-  };
-
-  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTheme(e.target.value);
-  };
-
-  const handleEditorChange = (value: string | undefined) => {
-    if (value !== undefined) {
-      setCode(value);
-      if (question) {
-        localStorage.setItem(getStorageKey(question.id, language), value);
-      }
-    }
-  };
 
   const handleRunCode = async () => {
     if (!question || !session?.user?.id) return;
@@ -602,7 +700,6 @@ const ProblemClient = ({ id }: ProblemClientProps) => {
           <div className={styles.editorContainer}>
             <Editor
               height="100%"
-              defaultLanguage={language}
               language={language}
               value={code}
               onChange={handleEditorChange}

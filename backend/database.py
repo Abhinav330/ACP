@@ -1,30 +1,76 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
-from dotenv import load_dotenv
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+import asyncio
+from datetime import datetime, timedelta
 
-# Load environment variables
-load_dotenv()
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
+DB_NAME = os.getenv("DB_NAME", "alterhire")
 
-# Get database URL from environment variable or use default
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sql_app.db")
-
-# Create SQLAlchemy engine
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+# Initialize the client
+client = AsyncIOMotorClient(
+    MONGODB_URI,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=10000,
+    socketTimeoutMS=45000,
+    maxPoolSize=50,
+    minPoolSize=10
 )
 
-# Create SessionLocal class
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Get database instance
+db = client[DB_NAME]
 
-# Create Base class
-Base = declarative_base()
+# Collections
+candidate_collection = db['candidate_login']
+questions_collection = db['Q_bank']
+submissions_collection = db['submissions']
+user_progress_collection = db['user_progress']
+profile_collection = db['User_info']
+modules_collection = db['modules']
 
-# Dependency to get DB session
-def get_db():
-    db = SessionLocal()
+async def get_db():
+    return db
+
+async def cleanup_unverified_users():
+    """Periodically remove unverified users after 3 hours"""
+    while True:
+        try:
+            # Delete unverified users older than 3 hours
+            cutoff_time = datetime.utcnow() - timedelta(hours=3)
+            result = await candidate_collection.delete_many({
+                "is_verified": False,
+                "created_at": {"$lt": cutoff_time}
+            })
+            if result.deleted_count > 0:
+                print(f"Cleaned up {result.deleted_count} unverified users")
+        except Exception as e:
+            print(f"Error in cleanup job: {str(e)}")
+        
+        # Run every hour
+        await asyncio.sleep(3600)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for FastAPI application"""
+    # Startup: Test database connection
     try:
-        yield db
-    finally:
-        db.close() 
+        await client.admin.command('ping')
+        print("Successfully connected to MongoDB!")
+    except Exception as e:
+        print(f"Failed to connect to MongoDB: {str(e)}")
+        raise e
+
+    # Start cleanup task
+    cleanup_task = asyncio.create_task(cleanup_unverified_users())
+    
+    yield  # Server is running
+    
+    # Cleanup
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
+    print("Shutting down application")
+    client.close()

@@ -533,14 +533,14 @@ export default function EditQuestion() {
                           })
                           .then(response => response.json())
                           .then(data => {
-                            setFormData(prev => ({
-                              ...prev,
+                          setFormData(prev => ({
+                            ...prev,
                               examples: prev.examples.map((ex, i) =>
                                 i === idx
                                   ? { ...ex, inputImage: { url: data.filename, caption: "" } }
                                   : ex
                               )
-                            }));
+                          }));
                           })
                           .catch(error => {
                             console.error('Error uploading image:', error);
@@ -630,14 +630,14 @@ export default function EditQuestion() {
                           })
                           .then(response => response.json())
                           .then(data => {
-                            setFormData(prev => ({
-                              ...prev,
+                          setFormData(prev => ({
+                            ...prev,
                               examples: prev.examples.map((ex, i) =>
                                 i === idx
                                   ? { ...ex, outputImage: { url: data.filename, caption: "" } }
                                   : ex
                               )
-                            }));
+                          }));
                           })
                           .catch(error => {
                             console.error('Error uploading image:', error);

@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-# from fastapi.security import OAuth2PasswordBearer
-# from pymongo import MongoClient
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Callable, Union
 import bcrypt
@@ -24,7 +22,8 @@ from models import (Submission,
                     PasswordResetRequest,
                     PasswordReset,
                     Question,
-                    CodeExecutionRequest)
+                    CodeExecutionRequest,
+                    get_last_successful_submission)
 from email_service import email_service
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
@@ -38,6 +37,7 @@ import asyncio
 from fastapi import APIRouter
 from azure.storage.blob import BlobServiceClient, ContentSettings
 import requests
+from database import get_db, lifespan
 
 # Load environment variables from .env file
 load_dotenv(dotenv_path="D:\Algo crafters\ACP\backend\.env")
@@ -47,6 +47,8 @@ question_images_dir = os.getenv("QUESTIONS_IMAGE_PATH")
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 AZURE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER","profile-picture")
 QUESTION_IMAGE_CONTAINER = os.getenv("QUESTION_IMAGE_CONTAINER", "question-images")
+AZURE_FUNCTION_PANDAS_EXECUTOR_URL = os.getenv("AZURE_FUNCTION_KEY_PANDAS")
+AZURE_FUNCTION_ONLY_PYTHON_EXECUTOR_URL = os.getenv("AZURE_FUNCTION_KEY_ONLY_PYTHON")
 
 # JWT configuration for NextAuth.js compatibility
 JWT_SECRET = os.getenv("NEXTAUTH_SECRET")  # Use the same secret as NextAuth
@@ -60,54 +62,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30  # 30 days to match NextAuth default
 # Rate limiting configuration
 limiter = Limiter(key_func=get_remote_address)
 
-# MongoDB connection setup
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
-DB_NAME = os.getenv("DB_NAME", "alterhire")
-
-# Initialize Motor async client with connection options
-client = AsyncIOMotorClient(
-    MONGODB_URI,
-    serverSelectionTimeoutMS=5000,  # 5 seconds timeout
-    connectTimeoutMS=10000,  # 10 seconds connection timeout
-    socketTimeoutMS=45000,  # 45 seconds socket timeout
-    maxPoolSize=50,
-    minPoolSize=10
+from database import (
+    client,
+    db,
+    candidate_collection,
+    questions_collection,
+    submissions_collection,
+    user_progress_collection,
+    profile_collection,
+    modules_collection
 )
-
-db = client[DB_NAME]
-candidate_collection = db['candidate_login']
-questions_collection = db['Q_bank']
-submissions_collection = db['submissions']
-user_progress_collection = db['user_progress']
-profile_collection = db['User_info']
-modules_collection = db['modules']
-
-# Initialize profile collection
-# profile_collection = db['profiles']
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Lifespan event handler for FastAPI application"""
-    # Startup: Test database connection
-    try:
-        await client.admin.command('ping')
-        print("Successfully connected to MongoDB")
-    except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}")
-        raise
-
-    # Start cleanup task
-    cleanup_task = asyncio.create_task(cleanup_unverified_users())
-    
-    yield  # Server is running
-    
-    # Cleanup
-    cleanup_task.cancel()
-    try:
-        await cleanup_task
-    except asyncio.CancelledError:
-        pass
-    print("Shutting down application")
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(
@@ -142,11 +106,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"]
 )
-
-# Mount the uploads directory for images
-
-# Add after the MongoDB connection setup
-    
 
 
 async def verify_token(authorization: str = Header(None)) -> dict:
@@ -471,25 +430,6 @@ async def resend_otp(request: dict):
         print(f"Resend OTP error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-# Add a cleanup job to remove unverified users after 3 hours
-async def cleanup_unverified_users():
-    """Periodically remove unverified users after 3 hours"""
-    while True:
-        try:
-            # Delete unverified users older than 3 hours
-            cutoff_time = datetime.utcnow() - timedelta(hours=3)
-            result = await candidate_collection.delete_many({
-                "is_verified": False,
-                "created_at": {"$lt": cutoff_time}
-            })
-            if result.deleted_count > 0:
-                print(f"Cleaned up {result.deleted_count} unverified users")
-        except Exception as e:
-            print(f"Error in cleanup job: {str(e)}")
-        
-        # Run every hour
-        await asyncio.sleep(3600)
-
 @app.post("/api/verify-otp")
 async def verify_otp(request: dict):
     try:
@@ -772,10 +712,20 @@ async def get_question(question_id: str):
         return serialize_question(question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-def run_code_via_azure_function(input_data):
-    url = "http://localhost:7071/api/run_code_executor"  # Or your deployed Azure Function URL
+def run_code_via_azure_function_only_python(input_data):
+    # url = "http://localhost:7071/api/run_code_executor"  # Or your deployed Azure Function URL
+    url = "https://pandasexecutor.azurewebsites.net/api/run_io_executor?code="+AZURE_FUNCTION_ONLY_PYTHON_EXECUTOR_URL
+    # print("input_data:", requests.post(url, json=input_data))
     response = requests.post(url, json=input_data)
+    
+    response.raise_for_status()
+    return response.json()
+def run_code_via_azure_function_pandas(input_data):
+    # url = "http://localhost:7071/api/run_code_executor"  # Or your deployed Azure Function URL
+    url = "https://pandasexecutor.azurewebsites.net/api/run_code_executor?code="+AZURE_FUNCTION_PANDAS_EXECUTOR_URL
+    # print("input_data:", requests.post(url, json=input_data))
+    response = requests.post(url, json=input_data)
+    
     response.raise_for_status()
     return response.json()
 
@@ -823,39 +773,42 @@ async def execute_code(execution_request: CodeExecutionRequest, authorization: s
 
         try:
             # Call Azure Function instead of Docker
-            results = run_code_via_azure_function(input_data)
-            total_test_cases = len(test_cases)
-            test_cases_passed = sum(1 for result in results['results'] if result.get('passed', False))
-            score = int((test_cases_passed / total_test_cases) * question.get('points', 0))
-            # If this is a submission, record it
-            if execution_request.is_submission:
-                print(f"Recording submission with score: {score}")  # Debug log
-                submission = Submission(
-                    candidate_id=user_id,
-                    question_id=execution_request.question_id,
-                    code_solve=execution_request.code,
-                    score=score,
-                    status="success" if test_cases_passed > 0 else "failed",
-                    test_cases_passed=test_cases_passed,
-                    total_test_cases=total_test_cases
-                )
-                await submit_solution(submission)
-            # Filter results based on submission type
-            if not execution_request.is_submission:
-                visible_results = [
-                    result for i, result in enumerate(results['results'])
-                    if not test_cases[i].get('is_hidden', False)
-                ]
+            if docker_runner == 'only_python':
+                results= run_code_via_azure_function_only_python(input_data)
             else:
-                visible_results = results['results']
+                results = run_code_via_azure_function_pandas(input_data)
+                total_test_cases = len(test_cases)
+                test_cases_passed = sum(1 for result in results['results'] if result.get('passed', False))
+                score = int((test_cases_passed / total_test_cases) * question.get('points', 0))
+                # If this is a submission, record it
+                if execution_request.is_submission:
+                    print(f"Recording submission with score: {score}")  # Debug log
+                    submission = Submission(
+                        candidate_id=user_id,
+                        question_id=execution_request.question_id,
+                        code_solve=execution_request.code,
+                        score=score,
+                        status="success" if test_cases_passed > 0 else "failed",
+                        test_cases_passed=test_cases_passed,
+                        total_test_cases=total_test_cases
+                    )
+                    await submit_solution(submission)
+                # Filter results based on submission type
+                if not execution_request.is_submission:
+                    visible_results = [
+                        result for i, result in enumerate(results['results'])
+                        if not test_cases[i].get('is_hidden', False)
+                    ]
+                else:
+                    visible_results = results['results']
             # (rest of your logic for points, emails, etc.)
-            return {
-                "status": "success",
-                "results": visible_results,
-                "score": score,
-                "test_cases_passed": test_cases_passed,
-                "total_test_cases": total_test_cases,
-                "is_submission": execution_request.is_submission,
+                return {
+                    "status": "success",
+                    "results": visible_results,
+                    "score": score,
+                    "test_cases_passed": test_cases_passed,
+                    "total_test_cases": total_test_cases,
+                    "is_submission": execution_request.is_submission,
                 "debug_output": results.get('debug_output', '')
             }
         except Exception as e:
@@ -910,13 +863,13 @@ def get_profile_picture_url(filename: str) -> str:
             return f"{filename}?{BLOB_SAS_TOKEN}"
     else:
         new_file = f"{BLOB_SAS_URL}/{filename}?{BLOB_SAS_TOKEN}"
-        print("new_file", new_file)
+
         return new_file
 
 def get_question_image_url(filename: str) -> str:
     if not filename:
         return ""
-    
+        
     # If it's already a full URL
     if filename.startswith("http") or filename.startswith("https"):
         if "?" in filename:
@@ -966,7 +919,6 @@ async def get_private_profile(authorization: str = Header(None)):
     # Always return a SAS URL for the profile picture
     if profile.get("profile_picture"):
         profile["profile_picture"] = get_profile_picture_url(profile["profile_picture"])
-        
     else:
         profile["profile_picture"] = get_profile_picture_url("default-avatar.png")
     # Calculate top_percentage
@@ -982,7 +934,6 @@ async def get_private_profile(authorization: str = Header(None)):
         profile["top_percentage"] = "Top 100%"
     # Always include module_percentiles
     profile["module_percentiles"] = profile.get("module_percentiles", {})
-    print("Profile picture SAS URL:", profile["profile_picture"])
     return profile
 
 # Add these models after other models
@@ -2026,6 +1977,44 @@ async def get_question_image(filename: str):
     elif filename.lower().endswith(".webp"):
         content_type = "image/webp"
     return Response(content=resp.content, media_type=content_type)
+
+@app.get("/api/success-history/{question_id}", dependencies=[Depends(require_user)])
+async def get_last_successful_submission_api(question_id: str, authorization: str = Header(None)):
+    """Get the last successful submission for a question by the authenticated user"""
+    print("=== Starting last successful submission API ===")  # Debug log
+    try:
+        # First verify database connection
+        try:
+            await client.admin.command('ping')
+        except Exception as e:
+            print(f"Database connection error: {str(e)}")
+            raise HTTPException(status_code=500, detail="Database connection error")
+
+        if not authorization:
+            raise HTTPException(status_code=401, detail="Authorization header missing")
+
+        # Verify token
+        try:
+            token_data = await verify_token(authorization)
+            user_id = str(token_data["sub"])
+        except Exception as e:
+            print(f"Token verification error: {str(e)}")
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+        # Use the shared model function to get the last successful submission
+        submission = await get_last_successful_submission(user_id, question_id, db)
+        if not submission:
+            return {"message": "No successful submission found"}
+
+        return submission  # FastAPI will serialize the Pydantic model
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Unexpected error in get_last_successful_submission_api: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # Uvicorn configuration
 if __name__ == "__main__":

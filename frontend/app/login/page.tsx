@@ -75,6 +75,13 @@ function LoginContent() {
         } else {
           setErrorMessage(result.error || 'Invalid email or password');
         }
+      } else {
+        // Clear all monaco-code related localStorage items on successful login
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('monaco-code-')) {
+            localStorage.removeItem(key);
+          }
+        });
       }
     } catch (error) {
       console.error('Login error:', error);

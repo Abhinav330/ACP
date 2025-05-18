@@ -1,48 +1,143 @@
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from bson import ObjectId
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, Float
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from database import Base
+from database import (
+    candidate_collection,
+    questions_collection,
+    submissions_collection,
+    user_progress_collection,
+    profile_collection,
+    modules_collection
+)
 
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-class User(Base):
-    __tablename__ = "users"
+    @classmethod
+    def validate(cls, v, *args, **kwargs):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid ObjectId")
+        return ObjectId(v)
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password = Column(String)
-    is_admin = Column(Boolean, default=False)
-    is_restricted = Column(Boolean, default=False)
-    is_verified = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    @classmethod
+    def __get_pydantic_json_schema__(cls, _schema_generator: Any) -> Dict[str, Any]:
+        return {"type": "string"}
 
-    # Relationships
-    user_info = relationship("User_info", back_populates="user", uselist=False)
+class User(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    email: str = Field(unique=True, index=True)
+    password: str
+    is_admin: bool = Field(default=False)
+    is_restricted: bool = Field(default=False)
+    is_verified: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
 
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def get_collection(cls):
+        return candidate_collection
+
+class UserInfo(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    user_id: PyObjectId
+    user_name: str
+    bio: str = Field(default="Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.")
+    profile_picture: Optional[str] = None
+    total_questions_solved: int = Field(default=0)
+    total_score: int = Field(default=0)
+    top_percentage: float = Field(default=100.0)
+    linkedin_url: Optional[str] = None
+    website_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def get_collection(cls):
+        return profile_collection
+
+class Achievement(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    user_id: PyObjectId
+    title: str
+    description: Optional[str] = None
+    icon_type: str = Field(default="medal")  # medal or trophy
+    date_earned: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def get_collection(cls):
+        return profile_collection  # Achievements are stored in the user profile
+
+class ActivityLog(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    user_id: PyObjectId
+    activity_type: str  # e.g., "question_solved", "achievement_earned"
+    activity_date: datetime = Field(default_factory=datetime.utcnow)
+    details: Optional[str] = None
+
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def get_collection(cls):
+        return profile_collection  # Activity logs are stored in the user profile
 
 class Submission(BaseModel):
-    candidate_id: str
-    question_id: str
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    candidate_id: PyObjectId
+    question_id: PyObjectId
     code_solve: str
-    score: int = 0
+    score: int
     submitted_at: datetime = Field(default_factory=datetime.utcnow)
-    status: str = "pending"  # pending, success, failed
+    status: str
     execution_time: Optional[float] = None
     memory_used: Optional[float] = None
     test_cases_passed: Optional[int] = None
     total_test_cases: Optional[int] = None
 
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def get_collection(cls):
+        return submissions_collection
 
 class UserProgress(BaseModel):
-    user_id: str
-    question_ids: List[str] = []  # List of solved question IDs
-    total_score: int = 0  # Sum of max scores from submissions
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    user_id: PyObjectId
+    question_ids: List[PyObjectId] = []
+    total_score: int = 0
     last_submission: Optional[datetime] = None
 
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def get_collection(cls):
+        return user_progress_collection
 
 class UserProfile(BaseModel):
     user_id: str
@@ -67,58 +162,25 @@ class UserProfile(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-
-class User_info(Base):
-    __tablename__ = "user_info"
-
-    id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    user_name = Column(String, nullable=False)
-    bio = Column(String, default="Hey! I am learning Data Science & AI. I will be the Best AI expert in the world by practising AI on Algo Crafters.")
-    profile_picture = Column(String, nullable=True)
-    total_questions_solved = Column(Integer, default=0)
-    total_score = Column(Integer, default=0)
-    top_percentage = Column(Float, default=100.0)
-    linkedin_url = Column(String, nullable=True)
-    website_url = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    # Relationships
-    user = relationship("User", back_populates="user_info")
-    achievements = relationship("Achievement", back_populates="user_info")
-    activity_logs = relationship("ActivityLog", back_populates="user_info")
-
-
-class Achievement(Base):
-    __tablename__ = "achievements"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user_info.id"))
-    title = Column(String, nullable=False)
-    description = Column(String)
-    icon_type = Column(String, default="medal")  # medal or trophy
-    date_earned = Column(DateTime(timezone=True), server_default=func.now())
-
-    user_info = relationship("User_info", back_populates="achievements")
-
-
-class ActivityLog(Base):
-    __tablename__ = "activity_logs"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user_info.id"))
-    activity_type = Column(String, nullable=False)  # e.g., "question_solved", "achievement_earned"
-    activity_date = Column(DateTime(timezone=True), server_default=func.now())
-    details = Column(String)
-
-    user_info = relationship("User_info", back_populates="activity_logs")
-
+class User_info(BaseModel):
+    user_id: PyObjectId
+    user_name: str
+    bio: str
+    profile_picture: Optional[str] = None
+    total_questions_solved: int
+    total_score: int
+    top_percentage: float
+    linkedin_url: Optional[str] = None
+    website_url: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    achievements: List[Dict[str, str]]
+    activity_logs: List[Dict[str, str]]
 
 # MongoDB Collection Names
 SUBMISSIONS_COLLECTION = "submissions"
 USER_PROGRESS_COLLECTION = "user_progress" 
 PROFILE_COLLECTION = 'User_info' 
-
 
 class UserSignup(BaseModel):
     email: EmailStr
@@ -196,3 +258,23 @@ class CodeExecutionRequest(BaseModel):
     question_id: str
     is_submission: bool = False
     docker_runner: str = "only_python"
+
+async def get_last_successful_submission(user_id: str, question_id: str, db) -> Optional[Submission]:
+    try:
+        user_obj_id = ObjectId(user_id)
+        question_obj_id = ObjectId(question_id)
+    except Exception as e:
+        print(f"Error converting IDs to ObjectId: {e}")
+        return None
+
+    submission = await db.submissions.find_one(
+        {
+            "candidate_id": user_obj_id,
+            "question_id": question_obj_id,
+            "status": "success"
+        },
+        sort=[("submitted_at", -1)]
+    )
+    if submission:
+        return Submission(**submission)
+    return None
