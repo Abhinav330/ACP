@@ -71,6 +71,7 @@ const Header: React.FC = () => {
                   <Link href="/leaderboard" className={`${styles.navLink} ${styles.leaderboardLink}`}>
                     Leaderboard
                   </Link>
+                  <Link href="/blog" className={`${styles.navLink} ${styles.leaderboardLink}`}>Blogs</Link>
                   <Link href="/about" className={`${styles.navLink} ${styles.leaderboardLink}`}>About Us</Link>
                 </>
               )}
@@ -79,6 +80,7 @@ const Header: React.FC = () => {
           ) : (
             <>
               <Link href="/pricing" className={styles.navLink}>Pricing</Link>
+              <Link href="/blog" className={`${styles.navLink} ${styles.leaderboardLink}`}>Blogs</Link>
               <Link href="/about" className={`${styles.navLink} ${styles.leaderboardLink}`}>About Us</Link>
             </>
           )}

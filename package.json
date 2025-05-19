@@ -5,8 +5,14 @@
     "tailwindcss": "^4.1.6"
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.30.8",
+    "@editorjs/header": "^2.8.8",
+    "@editorjs/image": "^2.10.2",
+    "@editorjs/list": "^2.0.8",
+    "@editorjs/quote": "^2.7.6",
     "@uiw/react-markdown-preview": "^5.1.4",
     "@uiw/react-md-editor": "^4.0.6",
+    "editorjs-react-renderer": "^3.5.1",
     "github-contribution-graph": "^2.0.2",
     "lodash": "^4.17.21",
     "react-activity-calendar": "^2.7.11",

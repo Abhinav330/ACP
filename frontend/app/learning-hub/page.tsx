@@ -88,6 +88,9 @@ export default function LearningHub() {
       </div>
       <h1 style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: '2rem', color: '#1a365d' }}>Learning Hub</h1>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', width: '100%', maxWidth: 900 }}>
+        <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.07)', padding: '2rem 1.5rem', fontSize: '1.2rem', fontWeight: 600, color: '#22577a', textAlign: 'center', minHeight: '110px', flex: '1 1 320px', minWidth: 280, maxWidth: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#22577a' }}>Guided Learning</h2>
+        </div>
         <Link href="/problems" style={{ textDecoration: 'none', flex: '1 1 320px', minWidth: 280, maxWidth: 350 }}>
           <div style={{
             background: '#fff',

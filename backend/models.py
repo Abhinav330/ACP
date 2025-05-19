@@ -278,3 +278,52 @@ async def get_last_successful_submission(user_id: str, question_id: str, db) -> 
     if submission:
         return Submission(**submission)
     return None
+
+class BlogSection(BaseModel):
+    heading: str
+    content: str
+    images: List[Dict[str, str]] = []  # List of {url: str, caption: str}
+
+class Author(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+
+class Blog(BaseModel):
+    title: str
+    main_image: Optional[Dict[str, str]] = None
+    content: dict  # Editor.js JSON
+    author: Optional[Author] = None
+    status: str = "draft"  # draft or published
+    tags: List[str] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_schema_extra = {
+            "example": {
+                "title": "Getting Started with Python",
+                "main_image": {
+                    "url": "https://example.com/python.jpg",
+                    "caption": "Python Programming Language"
+                },
+                "content": {
+                    "time": 1710000000000,
+                    "blocks": [
+                        {"type": "header", "data": {"text": "Introduction", "level": 2}},
+                        {"type": "paragraph", "data": {"text": "Python is a great language..."}}
+                    ],
+                    "version": "2.28.2"
+                },
+                "author": {
+                    "name": "John Doe",
+                    "email": "john.doe@example.com"
+                },
+                "status": "published",
+                "tags": ["python", "programming", "tutorial"],
+                "created_at": "2024-03-20T10:00:00Z",
+                "updated_at": "2024-03-20T10:00:00Z"
+            }
+        }

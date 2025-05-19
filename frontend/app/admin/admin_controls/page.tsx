@@ -24,6 +24,11 @@ const AdminControls = () => {
           <h2>User Management</h2>
           <p>View and manage user accounts</p>
         </Link>
+        <Link href="/admin/blogs" className={styles.card}>
+          <div className={styles.cardIcon}>📰</div>
+          <h2>Blog Management</h2>
+          <p>Create, edit, and manage blog posts</p>
+        </Link>
       </div>
     </div>
   );

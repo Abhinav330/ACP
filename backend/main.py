@@ -1,6 +1,10 @@
-from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request, Body, Response
+from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Request, Body, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Callable, Union
 import bcrypt
@@ -23,7 +27,8 @@ from models import (Submission,
                     PasswordReset,
                     Question,
                     CodeExecutionRequest,
-                    get_last_successful_submission)
+                    get_last_successful_submission,
+                    Blog)
 from email_service import email_service
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
@@ -50,6 +55,14 @@ QUESTION_IMAGE_CONTAINER = os.getenv("QUESTION_IMAGE_CONTAINER", "question-image
 AZURE_FUNCTION_PANDAS_EXECUTOR_URL = os.getenv("AZURE_FUNCTION_KEY_PANDAS")
 AZURE_FUNCTION_ONLY_PYTHON_EXECUTOR_URL = os.getenv("AZURE_FUNCTION_KEY_ONLY_PYTHON")
 
+# Add these constants after other constants
+BLOG_IMAGE_BLOB_SAS_URL = os.getenv("BLOG_IMAGE_BLOB_SAS_URL")
+BLOG_IMAGE_BLOB_SAS_TOKEN = os.getenv("BLOG_IMAGE_BLOB_SAS_TOKEN")
+BLOG_IMAGE_CONTAINER = os.getenv("BLOG_IMAGE_CONTAINER", "blog-images")
+
+# Initialize blog image container client
+blog_image_container_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING).get_container_client(BLOG_IMAGE_CONTAINER)
+
 # JWT configuration for NextAuth.js compatibility
 JWT_SECRET = os.getenv("NEXTAUTH_SECRET")  # Use the same secret as NextAuth
 if not JWT_SECRET:
@@ -70,7 +83,8 @@ from database import (
     submissions_collection,
     user_progress_collection,
     profile_collection,
-    modules_collection
+    modules_collection,
+    blogs_collection
 )
 
 # Initialize FastAPI app with lifespan
@@ -164,6 +178,18 @@ async def require_admin(token: str = Depends(verify_token)) -> bool:
         )
     return True
 
+async def get_current_user(authorization: str = Header(None)) -> dict:
+    """Get the current user from the authorization token"""
+    token_data = await verify_token(authorization)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+    
+    user = await candidate_collection.find_one({"_id": ObjectId(token_data["sub"])})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
+
 # Authentication endpoints
 @app.post("/api/login")
 @limiter.limit("5/minute")
@@ -197,6 +223,8 @@ async def login(credentials: UserLogin, request: Request):
             "sub": str(user["_id"]),
             "email": user["email"],
             "name": user.get("name", ""),
+            "firstName": user.get("firstName", ""),
+            "lastName": user.get("lastName", ""),
             "is_admin": user.get("is_admin", False),
             "is_restricted": user.get("is_restricted", False)
         })
@@ -208,6 +236,8 @@ async def login(credentials: UserLogin, request: Request):
                 "id": str(user["_id"]),
                 "email": user["email"],
                 "name": user.get("name", ""),
+                "firstName": user.get("firstName", ""),
+                "lastName": user.get("lastName", ""),
                 "is_admin": user.get("is_admin", False),
                 "is_restricted": user.get("is_restricted", False),
             }
@@ -2015,6 +2045,144 @@ async def get_last_successful_submission_api(question_id: str, authorization: st
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+def fix_objectid(doc):
+    if isinstance(doc, dict):
+        for k, v in doc.items():
+            if isinstance(v, ObjectId):
+                doc[k] = str(v)
+            elif isinstance(v, dict):
+                doc[k] = fix_objectid(v)
+            elif isinstance(v, list):
+                doc[k] = [fix_objectid(i) for i in v]
+    return doc
+
+def fix_objectid_and_datetime(doc):
+    if isinstance(doc, dict):
+        for k, v in doc.items():
+            if isinstance(v, ObjectId):
+                doc[k] = str(v)
+            elif isinstance(v, datetime):
+                doc[k] = v.isoformat()
+            elif isinstance(v, dict):
+                doc[k] = fix_objectid_and_datetime(v)
+            elif isinstance(v, list):
+                doc[k] = [fix_objectid_and_datetime(i) for i in v]
+    return doc
+
+@app.post("/api/blogs", dependencies=[Depends(require_admin)])
+async def create_blog(blog: Blog, current_user: dict = Depends(get_current_user)):
+    blog_dict = blog.dict()
+    blog_dict["author"] = current_user["_id"]
+    blog_dict["created_at"] = datetime.utcnow()
+    blog_dict["updated_at"] = datetime.utcnow()
+    result = await blogs_collection.insert_one(blog_dict)
+    created_blog = await blogs_collection.find_one({"_id": result.inserted_id})
+    created_blog = fix_objectid(created_blog)
+    return JSONResponse(status_code=201, content=created_blog)
+
+@app.get("/api/blogs")
+async def get_blogs(status: str = None):
+    query = {}
+    if status:
+        query["status"] = status
+    
+    blogs = await blogs_collection.find(query).to_list(length=100)
+    blogs = [fix_objectid_and_datetime(blog) for blog in blogs]
+    return JSONResponse(content=blogs)
+
+@app.get("/api/blogs/{blog_id}")
+async def get_blog(blog_id: str):
+    blog = await blogs_collection.find_one({"_id": ObjectId(blog_id)})
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    blog = fix_objectid_and_datetime(blog)
+    return JSONResponse(content=blog)
+
+@app.put("/api/blogs/{blog_id}", dependencies=[Depends(require_admin)])
+async def update_blog(blog_id: str, blog: Blog, current_user: dict = Depends(get_current_user)):
+    existing_blog = await blogs_collection.find_one({"_id": ObjectId(blog_id)})
+    if not existing_blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    # Allow all admins to edit any blog
+    if not current_user.get("is_admin", False) and str(existing_blog["author"]) != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to update this blog")
+    
+    blog_dict = blog.dict()
+    blog_dict["updated_at"] = datetime.utcnow()
+    
+    await blogs_collection.update_one(
+        {"_id": ObjectId(blog_id)},
+        {"$set": blog_dict}
+    )
+    
+    updated_blog = await blogs_collection.find_one({"_id": ObjectId(blog_id)})
+    updated_blog = fix_objectid_and_datetime(updated_blog)
+    return JSONResponse(content=updated_blog)
+
+@app.delete("/api/blogs/{blog_id}", dependencies=[Depends(require_admin)])
+async def delete_blog(blog_id: str, current_user: dict = Depends(get_current_user)):
+    existing_blog = await blogs_collection.find_one({"_id": ObjectId(blog_id)})
+    if not existing_blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    if str(existing_blog["author"]) != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this blog")
+    
+    await blogs_collection.delete_one({"_id": ObjectId(blog_id)})
+    return {"message": "Blog deleted successfully"}
+
+def get_blog_image_url(filename: str) -> str:
+    if not filename:
+        return ""
+        
+    # If it's already a full URL
+    if filename.startswith("http") or filename.startswith("https"):
+        if "?" in filename:
+            return filename
+        else:
+            return f"{filename}?{BLOG_IMAGE_BLOB_SAS_TOKEN}"
+    else:
+        return f"{BLOG_IMAGE_BLOB_SAS_URL}/{filename}?{BLOG_IMAGE_BLOB_SAS_TOKEN}"
+
+@app.post("/api/upload-blog-image", dependencies=[Depends(require_admin)])
+async def upload_blog_image(file: UploadFile = File(...)):
+    try:
+        # Create a unique filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"blog_{timestamp}_{file.filename}"
+        
+        # Upload to Azure Blob Storage
+        blob_client = blog_image_container_client.get_blob_client(filename)
+        data = await file.read()
+        content_type = file.content_type or "image/png"
+        blob_client.upload_blob(
+            data,
+            overwrite=True,
+            content_settings=ContentSettings(content_type=content_type)
+        )
+        
+        # Return the filename and URL
+        url = get_blog_image_url(filename)
+        return {"url": url, "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/blog-image/{filename}")
+async def get_blog_image(filename: str):
+    url = f"{BLOG_IMAGE_BLOB_SAS_URL}/{filename}?{BLOG_IMAGE_BLOB_SAS_TOKEN}"
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=404, detail="Image not found")
+    # Guess content type from filename
+    content_type = "image/png"
+    if filename.lower().endswith(".jpg") or filename.lower().endswith(".jpeg"):
+        content_type = "image/jpeg"
+    elif filename.lower().endswith(".gif"):
+        content_type = "image/gif"
+    elif filename.lower().endswith(".webp"):
+        content_type = "image/webp"
+    return Response(content=resp.content, media_type=content_type)
 
 # Uvicorn configuration
 if __name__ == "__main__":

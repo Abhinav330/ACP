@@ -28,6 +28,7 @@ submissions_collection = db['submissions']
 user_progress_collection = db['user_progress']
 profile_collection = db['User_info']
 modules_collection = db['modules']
+blogs_collection = db['blogs']
 
 async def get_db():
     return db
